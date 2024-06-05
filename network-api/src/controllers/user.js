@@ -6,9 +6,14 @@ const User = require('../models/User');
 exports.signup = (req, res, next) => {
     bcrypt.hash(req.body.password, 10)
       .then(hash => {
+        delete req.body.password;
         const user = new User({
-          email: req.body.email,
-          password: hash
+            user_name: req.body.last_name,
+            first_name: req.body.first_name,
+            last_name: req.body.last_name,
+            birth_date: new Date(req.body.birth_date),
+            email: req.body.email,
+            password: hash,
         });
         user.save()
           .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
