@@ -48,29 +48,44 @@ exports.login = (req, res, next) => {
 };
 
 exports.follow = (req, res, next) => {
-    User.findById(req.params.id) // vérifie si l'utilisateur qu'on veut suivre existe
-        .then(toFollowedUser => {
-            if (!toFollowedUser) {
+    // Trouver l'utilisateur à suivre
+    User.findById(req.params.id)
+        .select('followers')
+        .then(userToFollow => {
+            if (!userToFollow) {
                 return res.status(404).json({ message: 'Utilisateur non trouvé' });
             }
 
-            // ajout dans la liste des personnes suivies
-            User.findOne({ _id: req.auth.userId })
+            // Trouver l'utilisateur qui fait le suivi
+            User.findById(req.auth.userId)
                 .select('followed')
-                .then(data => {
-                    // vérifie si pas encore suivi
-                    const isAlreadyFollowed = data.followed.some(followed => followed.userId.toString() === req.params.id);
+                .then(userDoingFollowing => {
+                    // Vérifier si l'utilisateur est déjà suivi
+                    const isAlreadyFollowed = userDoingFollowing.followed.some(followed => followed.userId.equals(userToFollow._id));
 
                     if (isAlreadyFollowed) {
                         return res.status(400).json({ message: 'Utilisateur déjà suivi' });
                     }
 
-                    data.followed.unshift({
-                        userId: req.params.id
-                    });
+                    // Ajouter l'utilisateur à la liste des suivis
+                    userDoingFollowing.followed.unshift({ userId: userToFollow._id });
 
-                    data.save()
-                        .then(() => res.status(200).json({ message: "Objet ajouté" }))
+                    userDoingFollowing.save()
+                        .then(() => {
+                            // Vérifier si l'utilisateur est déjà un follower
+                            const isAlreadyFollower = userToFollow.followers.some(follower => follower.userId.equals(userDoingFollowing._id));
+
+                            if (!isAlreadyFollower) {
+                                // Ajouter l'utilisateur à la liste des followers
+                                userToFollow.followers.unshift({ userId: userDoingFollowing._id });
+
+                                userToFollow.save()
+                                    .then(() => res.status(200).json({ message: 'Opération effectuée.' }))
+                                    .catch(error => res.status(500).json({ error }));
+                            } else {
+                                res.status(200).json({ message: 'Opération effectuée.' });
+                            }
+                        })
                         .catch(error => res.status(500).json({ error }));
                 })
                 .catch(error => res.status(500).json({ error }));
@@ -78,31 +93,49 @@ exports.follow = (req, res, next) => {
         .catch(error => res.status(500).json({ error }));
 };
 
+
 exports.unfollow = (req, res, next) => {
+    // Trouver l'utilisateur à ne plus suivre
     User.findById(req.params.id)
-        .then(() => {
-            User.findOne({ _id: req.auth.userId })
-            .select('followed')
-            .then(data => {
-                let index = -1;
-                for(let i=0; i < data.followed.length; i++) {
-                    if(data.followed[i].userId.toString() === req.params.id) {
-                        index = i;
-                        break
+        .select('followers')
+        .then(userToUnfollow => {
+            if (!userToUnfollow) {
+                return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            }
+
+            // Trouver l'utilisateur qui fait l'opération de unfollow
+            User.findById(req.auth.userId)
+                .select('followed')
+                .then(userDoingUnfollowing => {
+                    // Trouver l'index de l'utilisateur à ne plus suivre dans le tableau 'followed'
+                    const indexInFollowed = userDoingUnfollowing.followed.findIndex(followed => followed.userId.equals(userToUnfollow._id));
+
+                    if (indexInFollowed === -1) {
+                        return res.status(400).json({ message: 'Utilisateur non suivi' });
                     }
-                }
-    
-                if(index === -1){
-                    return res.status(400).json({message:"utilisateur non suivi"});
-                }
-    
-                data.followed.splice(index, 1);
-    
-                data.save()
-                    .then(() => res.status(200).json({ message: "Objet retiré" }))
-                    .catch(error => res.status(500).json({ error }));
-            })
-            .catch(error => res.status(500).json({ error }));
+
+                    // Supprimer l'utilisateur de la liste des suivis
+                    userDoingUnfollowing.followed.splice(indexInFollowed, 1);
+
+                    userDoingUnfollowing.save()
+                        .then(() => {
+                            // Trouver l'index de l'utilisateur dans le tableau 'followers' de l'utilisateur à ne plus suivre
+                            const indexInFollowers = userToUnfollow.followers.findIndex(follower => follower.userId.equals(userDoingUnfollowing._id));
+
+                            if (indexInFollowers !== -1) {
+                                // Supprimer l'utilisateur de la liste des followers
+                                userToUnfollow.followers.splice(indexInFollowers, 1);
+
+                                userToUnfollow.save()
+                                    .then(() => res.status(200).json({ message: 'Opération effectuée' }))
+                                    .catch(error => res.status(500).json({ error }));
+                            } else {
+                                res.status(200).json({ message: 'Opération effectuée' });
+                            }
+                        })
+                        .catch(error => res.status(500).json({ error }));
+                })
+                .catch(error => res.status(500).json({ error }));
         })
         .catch(error => res.status(500).json({ error }));
 };
