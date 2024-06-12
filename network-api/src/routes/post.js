@@ -7,7 +7,7 @@ const postCtrl = require('../controllers/post');
 const router = express.Router();
 
 router.post('/', auth, multer, postCtrl.createPost);
-
+router.get('/', auth, postCtrl.getPersonalsizedPosts);
 router.get('/:id', auth, postCtrl.getOnePost);
 router.put('/:id', auth, multer, postCtrl.modifyPost);
 router.delete('/:id', auth, postCtrl.deletePost);
