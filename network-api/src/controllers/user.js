@@ -68,7 +68,7 @@ exports.follow = (req, res, next) => {
                     }
 
                     // Ajouter l'utilisateur à la liste des suivis
-                    userDoingFollowing.followed.unshift({ userId: userToFollow._id });
+                    userDoingFollowing.followed.push({ userId: userToFollow._id });
 
                     userDoingFollowing.save()
                         .then(() => {
@@ -77,7 +77,7 @@ exports.follow = (req, res, next) => {
 
                             if (!isAlreadyFollower) {
                                 // Ajouter l'utilisateur à la liste des followers
-                                userToFollow.followers.unshift({ userId: userDoingFollowing._id });
+                                userToFollow.followers.push({ userId: userDoingFollowing._id });
 
                                 userToFollow.save()
                                     .then(() => res.status(200).json({ message: 'Opération effectuée.' }))
@@ -92,7 +92,6 @@ exports.follow = (req, res, next) => {
         })
         .catch(error => res.status(500).json({ error }));
 };
-
 
 exports.unfollow = (req, res, next) => {
     // Trouver l'utilisateur à ne plus suivre
