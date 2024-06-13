@@ -159,8 +159,102 @@ exports.likePost = (req, res, next) => {
 };
 
 exports.commentPost = (req, res, next) => {
+  Post.findById(req.params.postId)
+    .select('comments')
+    .then(post => {
+      if(!post) {
+        return res.status(404).json({ message: "Post introuvable."})
+      }
 
+      commentContentObject = req.file ? {
+        text: req.body.comment,
+        fileUrl: `${req.protocol}://${req.get('host')}/files/${req.file.filename}`
+      } : {  text: req.body.comment };
+
+      post.comments.push({
+        authorId: req.auth.userId,
+        content: commentContentObject
+      })
+
+      post.save()
+        .then(()=> { 
+          res.status(200).json({ message: 'opération effectué.'}); 
+        })
+        .catch(error => {
+          res.status(500).json({error})
+      });
+    })
+    .catch(error => {
+      res.status(500).json({ error });
+  });
 };
+
+exports.modifyComment = (req, res, next) => {
+  Post.findById(req.params.postId)
+    .select('comments')
+    .then(post => {
+      if (!post) {
+        return res.status(404).json({ message: "Post introuvable." });
+      }
+
+      const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.body.commentId);
+
+      if(indexInComments === -1) {
+        return res.status(404).json({ message: 'commentaire non trouvé'});
+      }
+
+      if(post.comments[indexInComments].authorId != req.auth.userId) {
+        return res.status(401).json({ message: 'opération non autorisé.'});
+      }
+
+      let commentContentObject = {};
+
+      // console.log(req.body);
+
+      //pour eviter de supprimer les valeurs déjà existant dans le commentaire où la valeur n'est pas modifier
+      if (req.body.comment && req.body.comment != "") {
+        commentContentObject.text = req.body.comment;
+      }
+      else
+      {
+        if (post.comments[indexInComments].content.text)
+        {
+          commentContentObject.text = post.comments[indexInComments].text;
+        }
+      }
+
+      if(req.file) 
+      {
+        commentContentObject.fileUrl = `${req.protocol}://${req.get('host')}/files/${req.file.filename}`;
+      } 
+      else 
+      {
+        if(post.comments[indexInComments].content.fileUrl) 
+        {
+          commentContentObject.fileUrl = post.comments[indexInComments].content.fileUrl;
+        }
+      }
+
+      post.comments[indexInComments].content = commentContentObject;
+      post.comments[indexInComments].content.updatedAt = Date.now();
+
+      const commentObject = {
+        comments: post.comments
+      }
+
+      Post.updateOne({ _id: req.params.postId }, { ...commentObject, _id:  req.params.postId })
+        .then(() => {
+          res.status(200).json({ message: 'commentaire modifié' });
+        })
+        .catch(error => {
+          res.status(500).json({ error });
+      });
+    })
+    .catch(error => {
+      res.status(500).json({ error });
+    });
+};
+
 
 exports.replyComment = (req, res, next) => {
 

@@ -1,9 +1,31 @@
 const mongoose = require('mongoose');
 
+const contentSchema = new mongoose.Schema({
+    text: { 
+        type: String,
+        validate: {
+            validator: function() {
+                return this.text || this.fileUrl;
+            },
+            message: 'Content dois au moins avoir un text ou une file.'
+        }
+    },
+    fileUrl: { 
+        type: String,
+        validate: {
+            validator: function() {
+                return this.text || this.fileUrl;
+            },
+            message: 'Content dois au moins avoir un text ou une file.'
+        } 
+    } 
+}, {
+    _id: false // evite la création d'un id
+});
+
 const replySchema = new mongoose.Schema({
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    text: { type: String, required: true },
-    fileUrl: { type: String },
+    content: [contentSchema],
     likes: [{
         authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         date: { type: Date, required: true, default: Date.now }
@@ -14,7 +36,7 @@ const replySchema = new mongoose.Schema({
 
 const commentSchema = new mongoose.Schema({
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    content: { type: String, required: true },
+    content: contentSchema,
     likes: [{
         authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         date: { type: Date, required: true, default: Date.now }
@@ -28,7 +50,7 @@ const postSchema = new mongoose.Schema({
     caption: { type: String, required: true },
     hashtags: { 
         type: [{ type: String, required: true }],
-        validate: [arrayLimit, '{PATH} must have at least one hashtag']
+        validate: [arrayLimit, '{PATH} dois avoir au moins un hashtag']
     },
     fileUrl: { type: String },
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
