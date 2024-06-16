@@ -5,6 +5,7 @@ const path = require('path');
 
 const stuffRoutes = require('./routes/stuff');
 const userRoutes = require('./routes/user');
+const postRoutes = require('./routes/post');
 
 const app = express();
 
@@ -17,7 +18,7 @@ app.use((req, res, next) => {
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended:false}));
-app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/files', express.static(path.join(__dirname, 'files')));
 
 mongoose.connect('mongodb://localhost:27017/network', { serverSelectionTimeoutMS: 5000 })
     .then(() => console.log('Connexion à MongoDB réussie !'))
@@ -26,6 +27,7 @@ mongoose.connect('mongodb://localhost:27017/network', { serverSelectionTimeoutMS
 
 app.use('/api/stuff', stuffRoutes);
 app.use('/api/auth', userRoutes);
+app.use('/api/post', postRoutes);
 
 app.get('/api',(_, res) =>{
     res.json({  message: 'welcom to network-api' });
