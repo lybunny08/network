@@ -14,8 +14,12 @@ router.put('/:id', auth, multer, postCtrl.modifyPost);
 router.post('/:id', auth, postCtrl.likePost);
 router.delete('/:id', auth, postCtrl.deletePost);
 
-router.post('/comment/:postId', auth, multer, postCtrl.commentPost);
-router.put('/comment/:postId', auth, multer, postCtrl.modifyComment);
+router.post('/:postId/comment', auth, multer, postCtrl.commentPost);
+router.put('/:postId/comment/:commentId', auth, multer, postCtrl.modifyComment);
+router.delete('/:postId/comment/:commentId', auth, postCtrl.deleteComment);
+
+router.post('/comment/:postId/:commentId', auth, multer, postCtrl.replyComment);
+
 
 
 module.exports = router;

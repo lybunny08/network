@@ -57,12 +57,12 @@ exports.modifyPost = (req, res, next) => {
           Post.updateOne({ _id: req.params.id}, { ...postObject, _id: req.params.id})
             .then(() => res.status(200).json({message : 'Objet modifié!'}))
             .catch(error => {
-              res.status(401).json({ error })
+              res.status(500).json({ error })
           });
       }
     })
     .catch((error) => {
-        res.status(400).json({ error });
+        res.status(500).json({ error });
   });
 };
 
@@ -254,6 +254,51 @@ exports.modifyComment = (req, res, next) => {
   }
 };
 
+exports.deleteComment = (req, res, next) => {
+  Post.findById(req.params.postId)
+    .select('comments')
+    .then(post => {
+      if (!post) {
+        return res.status(404).json({ message: "Post introuvable." });
+      }
+
+      const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
+      if(indexInComments === -1) {
+        return res.status(404).json({ message: 'commentaire non trouvé'});
+      }
+      
+      if(post.comments[indexInComments].authorId != req.auth.userId) {
+        return res.status(401).json({ message: 'opération non autorisé.'});
+      }
+
+      if(post.comments[indexInComments].content.fileUrl)
+      {
+        const filename = post.comments[indexInComments].content.fileUrl.split('/files/')[1];
+        fs.unlink(`files/${filename}`, () => {
+          post.comments.splice(indexInComments, 1);
+          post.save()
+            .then(() => { 
+              res.status(200).json({message: 'Objet supprimé !'})
+            })
+            .catch(error => {
+              res.status(500).json({ error });
+          });
+        });
+      } else {
+        post.comments.splice(indexInComments, 1);
+          post.save()
+            .then(() => { 
+              res.status(200).json({message: 'Objet supprimé !'})
+            })
+            .catch(error => {
+              res.status(500).json({ error });
+        });
+      }
+    })
+    .catch( error => {
+        res.status(500).json({ error });
+  });
+}
 
 exports.replyComment = (req, res, next) => {
 
