@@ -190,69 +190,68 @@ exports.commentPost = (req, res, next) => {
 };
 
 exports.modifyComment = (req, res, next) => {
-  Post.findById(req.params.postId)
-    .select('comments')
-    .then(post => {
-      if (!post) {
-        return res.status(404).json({ message: "Post introuvable." });
-      }
+  // commentaire check
+  const commentIsEmpty = (comment) => {
+    if(comment && comment.trim().length !== 0)
+     return false;
+    return true;
+  }
 
-      const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.body.commentId);
-
-      if(indexInComments === -1) {
-        return res.status(404).json({ message: 'commentaire non trouvé'});
-      }
-
-      if(post.comments[indexInComments].authorId != req.auth.userId) {
-        return res.status(401).json({ message: 'opération non autorisé.'});
-      }
-
-      let commentContentObject = {};
-
-      // console.log(req.body);
-
-      //pour eviter de supprimer les valeurs déjà existant dans le commentaire où la valeur n'est pas modifier
-      if (req.body.comment && req.body.comment != "") {
-        commentContentObject.text = req.body.comment;
-      }
-      else
-      {
-        if (post.comments[indexInComments].content.text)
-        {
-          commentContentObject.text = post.comments[indexInComments].text;
+  if(!commentIsEmpty(req.body.comment) || req.file) {
+    Post.findById(req.params.postId) // cherche le post, si rien erreur
+      .select('comments')
+      .then(post => {
+        // les check
+        if (!post) {
+          return res.status(404).json({ message: "Post introuvable." });
         }
-      }
-
-      if(req.file) 
-      {
-        commentContentObject.fileUrl = `${req.protocol}://${req.get('host')}/files/${req.file.filename}`;
-      } 
-      else 
-      {
-        if(post.comments[indexInComments].content.fileUrl) 
-        {
-          commentContentObject.fileUrl = post.comments[indexInComments].content.fileUrl;
+        const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.body.commentId);
+        if(indexInComments === -1) {
+          return res.status(404).json({ message: 'commentaire non trouvé'});
         }
-      }
+        if(post.comments[indexInComments].authorId != req.auth.userId) {
+          return res.status(401).json({ message: 'opération non autorisé.'});
+        }
 
-      post.comments[indexInComments].content = commentContentObject;
-      post.comments[indexInComments].content.updatedAt = Date.now();
+        let commentContentObject = {};    
+        if (!commentIsEmpty(req.body.comment)) {
+          commentContentObject.text = req.body.comment;
+        }      
+        else {
+          if (post.comments[indexInComments].content.text) {
+            commentContentObject.text = post.comments[indexInComments].content.text;
+          }
+        }
 
-      const commentObject = {
-        comments: post.comments
-      }
+        if(req.file) {
+          commentContentObject.fileUrl = `${req.protocol}://${req.get('host')}/files/${req.file.filename}`;
+        } 
+        else {
+          if(post.comments[indexInComments].content.fileUrl) 
+            commentContentObject.fileUrl = post.comments[indexInComments].content.fileUrl;
+        }
 
-      Post.updateOne({ _id: req.params.postId }, { ...commentObject, _id:  req.params.postId })
-        .then(() => {
-          res.status(200).json({ message: 'commentaire modifié' });
-        })
-        .catch(error => {
-          res.status(500).json({ error });
-      });
-    })
-    .catch(error => {
-      res.status(500).json({ error });
+        post.comments[indexInComments].content = commentContentObject;
+        post.comments[indexInComments].updatedAt = Date.now(); // à trailler
+
+        const commentObject = {
+          comments: post.comments
+        }
+
+        Post.updateOne({ _id: req.params.postId }, { ...commentObject, _id:  req.params.postId })
+          .then(() => {
+            res.status(200).json({ message: 'commentaire modifié' });
+          })
+          .catch(error => {
+            res.status(500).json({ error });
+        });
+      })
+      .catch(error => {
+        res.status(500).json({ error });
     });
+  } else {
+    res.status(400).json({ message: 'Bad request'});
+  }
 };
 
 
