@@ -205,7 +205,7 @@ exports.modifyComment = (req, res, next) => {
         if (!post) {
           return res.status(404).json({ message: "Post introuvable." });
         }
-        const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.body.commentId);
+        const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
         if(indexInComments === -1) {
           return res.status(404).json({ message: 'commentaire non trouvé'});
         }
@@ -213,25 +213,12 @@ exports.modifyComment = (req, res, next) => {
           return res.status(401).json({ message: 'opération non autorisé.'});
         }
 
-        let commentContentObject = {};    
-        if (!commentIsEmpty(req.body.comment)) {
-          commentContentObject.text = req.body.comment;
-        }      
-        else {
-          if (post.comments[indexInComments].content.text) {
-            commentContentObject.text = post.comments[indexInComments].content.text;
-          }
-        }
-
-        if(req.file) {
-          commentContentObject.fileUrl = `${req.protocol}://${req.get('host')}/files/${req.file.filename}`;
-        } 
-        else {
-          if(post.comments[indexInComments].content.fileUrl) 
-            commentContentObject.fileUrl = post.comments[indexInComments].content.fileUrl;
-        }
-
-        post.comments[indexInComments].content = commentContentObject;
+        post.comments[indexInComments].content = req.file ? {
+          text: req.body.comment,
+          fileUrl:`${req.protocol}://${req.get('host')}/files/${req.file.filename}`
+        } : { 
+          text: req.body.comment
+        };
         post.comments[indexInComments].updatedAt = Date.now(); // à trailler
 
         const commentObject = {
@@ -267,6 +254,7 @@ exports.deleteComment = (req, res, next) => {
         return res.status(404).json({ message: 'commentaire non trouvé'});
       }
       
+      // securité
       if(post.comments[indexInComments].authorId != req.auth.userId) {
         return res.status(401).json({ message: 'opération non autorisé.'});
       }
@@ -301,6 +289,151 @@ exports.deleteComment = (req, res, next) => {
 }
 
 exports.replyComment = (req, res, next) => {
+  const replyIsEmpty = (reply) => {
+    if(reply && reply.trim().length !== 0)
+     return false;
+    return true;
+  }
+
+  if(!replyIsEmpty(req.body.reply) || req.file) {
+    Post.findById(req.params.postId)
+      .select('comments')
+      .then(post => {
+        if (!post) {
+          return res.status(404).json({ message: "Post introuvable." });
+        }
+
+        const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
+        if(indexInComments === -1) {
+          return res.status(404).json({ message: 'commentaire non trouvé'});
+        }
+
+        post.comments[indexInComments].replies.push( req.file ? {
+          authorId: req.auth.userId,
+          content: {
+            text: req.body.reply,
+            fileUrl: `${req.protocol}://${req.get('host')}/files/${req.file.filename}`
+          }
+        } : {
+          authorId: req.auth.userId,
+          content: {
+            text: req.body.reply
+          }
+        });
+
+        post.save()
+          .then(()=> {
+            res.status(200).json({ message: "oppération éffectué."});
+          })
+          .catch(error => {
+            res.status(500).json({ error });
+        });
+      })
+      .catch(error => {
+        res.status(500).json({ error });
+    });
+  } else {
+    res.status(400).json({ message: 'Bad request'});
+  }
+};
+
+exports.modifyReply = (req, res, next) => {
+  const replyIsEmpty = (reply) => {
+    if(reply && reply.trim().length !== 0)
+     return false;
+    return true;
+  }
+
+  if(!replyIsEmpty(req.body.reply) || req.file) {
+    Post.findById(req.params.postId)
+      .select('comments')
+      .then(post => {
+        if (!post) {
+          return res.status(404).json({ message: "Post introuvable." });
+        }
+
+        const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
+        if(indexInComments === -1) {
+          return res.status(404).json({ message: 'commentaire non trouvé'});
+        }
+
+        const indexInReplies = post.comments[indexInComments].replies.findIndex(reply => reply._id.toString() === req.params.replyId);
+        if(indexInReplies === -1) {
+          return res.status(404).json({ message: 'reponse non trouvé'});
+        }
+
+        // securité
+        if(post.comments[indexInComments].replies[indexInReplies].authorId != req.auth.userId) {
+          return res.status(401).json({ message: 'opération non autorisé.'});
+        }
+
+        post.comments[indexInComments].replies[indexInReplies].content = req.file ? {
+          text: req.body.reply,
+          fileUrl: `${req.protocol}://${req.get('host')}/files/${req.file.filename}`
+        } : { 
+          text: req.body.reply
+        };
+
+        post.comments[indexInComments].replies[indexInReplies].updatedAt = Date.now(); //
+
+        const commentObject = {
+          comments: post.comments
+        }
+
+        Post.updateOne({ _id: req.params.postId}, { ...commentObject, _id: req.params.postId })
+            .then(() => res.status(200).json({message : 'Objet modifié!'}))
+            .catch(error => {
+              res.status(500).json({ error })
+        });
+
+      })
+      .catch(error => {
+        res.status(500).json({ error });
+    });
+  } else {
+    res.status(400).json({ message: 'Bad request'});
+  }
+};
+
+exports.deleteReply = (req, res, next) => {
+  Post.findById(req.params.postId)
+    .select('comments')
+    .then(post => {
+      if (!post) {
+        return res.status(404).json({ message: "Post introuvable." });
+      }
+
+      const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
+      if(indexInComments === -1) {
+        return res.status(404).json({ message: 'commentaire non trouvé'});
+      }
+
+      const indexInReplies = post.comments[indexInComments].replies.findIndex(reply => reply._id.toString() === req.params.replyId);
+      if(indexInReplies === -1) {
+        return res.status(404).json({ message: 'reponse non trouvé'});
+      }
+
+      // securité
+      if(post.comments[indexInComments].replies[indexInReplies].authorId != req.auth.userId) {
+        return res.status(401).json({ message: 'opération non autorisé.'});
+      }
+
+      post.comments[indexInComments].replies.splice(indexInReplies, 1);
+
+      post.save()
+        .then(() => { 
+          res.status(200).json({message: 'Objet supprimé !'})
+        })
+        .catch(error => {
+          res.status(500).json({ error });
+      });
+    })
+    .catch(error => {
+      res.status(500).json({ error });
+  })
+}
+
+exports.likeReply = (req, res, next) => {
 
 };
 

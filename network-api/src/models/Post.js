@@ -25,13 +25,13 @@ const contentSchema = new mongoose.Schema({
 
 const replySchema = new mongoose.Schema({
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    content: [contentSchema],
+    content: contentSchema,
     likes: [{
         authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         date: { type: Date, required: true, default: Date.now }
     }],
     createdAt: { type: Date, required: true, default: Date.now },
-    updatedAt: { type: Date, required: true, default: Date.now }
+    updatedAt: { type: Date }
 });
 
 const commentSchema = new mongoose.Schema({
@@ -43,7 +43,7 @@ const commentSchema = new mongoose.Schema({
     }],
     replies: [replySchema],
     createdAt: { type: Date, required: true, default: Date.now },
-    updatedAt: { type: Date, required: true, default: Date.now }
+    updatedAt: { type: Date }
 });
 
 const postSchema = new mongoose.Schema({
@@ -60,7 +60,7 @@ const postSchema = new mongoose.Schema({
     }],
     comments: [commentSchema],
     createdAt: { type: Date, required: true, default: Date.now },
-    updatedAt: { type: Date, required: true, default: Date.now }
+    updatedAt: { type: Date }
 });
 
 function arrayLimit(val) {

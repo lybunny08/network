@@ -18,8 +18,10 @@ router.post('/:postId/comment', auth, multer, postCtrl.commentPost);
 router.put('/:postId/comment/:commentId', auth, multer, postCtrl.modifyComment);
 router.delete('/:postId/comment/:commentId', auth, postCtrl.deleteComment);
 
-router.post('/comment/:postId/:commentId', auth, multer, postCtrl.replyComment);
-
+router.post('/:postId/comment/:commentId/reply', auth, multer, postCtrl.replyComment);
+router.post('/:postId/comment/:commentId/reply/:replyId', auth, postCtrl.likeReply);
+router.put('/:postId/comment/:commentId/reply/:replyId', auth, multer, postCtrl.modifyReply);
+router.delete('/:postId/comment/:commentId/reply/:replyId', auth, multer, postCtrl.deleteReply);
 
 
 module.exports = router;
