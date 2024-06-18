@@ -1,7 +1,10 @@
 import React from 'react';
+import SuggestionList from '../components/SuggestionList'
 
 const Discover = () => {
-  return <div>Contenu de la page de decouverte</div>;
+  return (
+              <SuggestionList />
+  );
 };
 
 export default Discover;

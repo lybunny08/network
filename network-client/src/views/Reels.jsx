@@ -5,16 +5,13 @@ import SuggestionList from '../components/SuggestionList';
 
 const Reels = () => {
   return (
-    <Container fluid>
-      <Row>
+    <div style={{ marginLeft: '240px', paddingTop: '0', marginTop: '0' }}>
         <Col md={10}>
           <Post />
+          <Post />
+          <Post />
         </Col>
-        {/* <Col md={4}>
-          <SuggestionList />
-        </Col> */}
-      </Row>
-    </Container>
+    </div>
   );
 };
 
