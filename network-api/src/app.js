@@ -3,7 +3,6 @@ const bodyparser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
 
-const stuffRoutes = require('./routes/stuff');
 const userRoutes = require('./routes/user');
 const postRoutes = require('./routes/post');
 
@@ -25,7 +24,6 @@ mongoose.connect('mongodb://localhost:27017/network', { serverSelectionTimeoutMS
     .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 
-app.use('/api/stuff', stuffRoutes);
 app.use('/api/auth', userRoutes);
 app.use('/api/post', postRoutes);
 
