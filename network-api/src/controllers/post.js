@@ -434,7 +434,43 @@ exports.deleteReply = (req, res, next) => {
 }
 
 exports.likeReply = (req, res, next) => {
+  Post.findById(req.params.postId)
+    .then(post => {
+      if (!post) {
+        return res.status(404).json({ message: "Post introuvable." });
+      }
 
+      const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
+      if(indexInComments === -1) {
+        return res.status(404).json({ message: 'commentaire non trouvé'});
+      }
+
+      const indexInReplies = post.comments[indexInComments].replies.findIndex(reply => reply._id.toString() === req.params.replyId);
+      if(indexInReplies === -1) {
+        return res.status(404).json({ message: 'reponse non trouvé'});
+      }
+
+      const indexInLikes = post.comments[indexInComments].replies[indexInReplies].likes.findIndex(like => like.authorId.toString() === req.auth.userId);
+      if (indexInLikes !== -1) {
+        post.comments[indexInComments].replies[indexInReplies].likes.splice(indexInLikes, 1);
+      } else {
+        post.comments[indexInComments].replies[indexInReplies].likes.push({
+          authorId: req.auth.userId
+        });
+      }
+
+      post.save()
+        .then(() =>{
+          res.status(200).json({ message: "Opération éfféctué." });
+        })
+        .catch(error => {
+          res.status(500).json({ error });
+      });
+     
+    })
+    .catch(error => {
+      res.status(500).json({ error });
+  });
 };
 
 exports.getPersonalsizedPosts = (req, res, next) => {
