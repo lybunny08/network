@@ -102,7 +102,7 @@ exports.deletePost = (req, res, next) => {
 
 exports.likePost = (req, res, next) => {
   Post.findById(req.params.id)
-    .select('likes')
+    .select('likes hashtags')
     .then(post => {
       if (!post) {
         return res.status(404).json({ message: 'Post non trouvé' });
@@ -121,7 +121,7 @@ exports.likePost = (req, res, next) => {
       post.save()
         .then(() => {
           User.findById(req.auth.userId)
-            .select('likedPosts')
+            .select('likedPosts favoriteHashtags')
             .then(user => {
               const indexInlikedPosts = user.likedPosts.findIndex(likedPost => likedPost.postId.equals(post._id));
 
@@ -136,6 +136,11 @@ exports.likePost = (req, res, next) => {
               else 
               {
                 user.likedPosts.push({postId: post._id});
+                post.hashtags.forEach(hashtag => {
+                  user.favoriteHashtags.push({
+                    hashtag: hashtag
+                  });
+                });
               }
 
               user.save()
@@ -474,22 +479,48 @@ exports.likeReply = (req, res, next) => {
 };
 
 exports.getPersonalsizedPosts = (req, res, next) => {
-  User.findOne({ _id: req.auth.userId })
+  User.findById(req.auth.userId)
+    .select('location favoriteHashtags searches likedPosts followers followed')
     .then(user => {
-      const followed = user.followedId;
+      const isAddedWithinLast7Days = (dateString) => {
+        const addedAtDate = new Date(dateString);
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        return addedAtDate >= sevenDaysAgo;
+      };
 
-      let posts = [];
-      followed.map( followedUser => {
-        Post.find({ authorId: followedUser.userId })
-          .limit(20)
-          .sort({ create_at:-1, update_at:-1})
-          .then( post => { posts.push(post);})
-          .catch( error => { res.status(500).json({ error }); });
+      const removeDuplicate = (array) => {
+        let unique = [];
+        array.forEach(data => {
+          if(unique.indexOf(data) === -1) {
+            unique.push(data);
+          }
+        });
+        return unique;
+      }
+
+      const usersFollowed = user.followed; // on vas voir ceux qui on des publications récentes
+      const usersFollowers = user.followed; // on vas voir ceux qui on des publications récentes
+      const searches = user.searches; // filtre en fonction de la date, on prend les mot clés
+
+      /*  on vas melanger les hashtags récents (ok)
+          on prends les publication récent des users suivie et suiveurs
+          on cherches les post récents avec les mots clé de searches
+      */
+
+      // filtre des hashtags péféré
+      let currentFavoriteHashtags= [] 
+      user.favoriteHashtags.forEach(hastag => {
+        if (isAddedWithinLast7Days(hastag.addedAt.toString())) {
+          currentFavoriteHashtags.push(hastag.hashtag);
+        }
       });
+      currentFavoriteHashtags = removeDuplicate(currentFavoriteHashtags);
+      // prendres les punlications récent qui contient les tages, limit ?
 
-      res.status(200).json(posts);
+      return res.status(200).json(currentFavoriteHashtags);
+
     })
-    .catch( error => {
-      res.status(500).json({ error });
+    .catch(error => {
+        res.status(500).json({ error });
   });
 };
