@@ -6,13 +6,13 @@ import SuggestionList from '../components/SuggestionList';
 
 const Home = () => {
   return (
-    <Container fluid className="h-100 d-flex flex-column mt-2">
-      <Story />
+    <Container fluid className="d-flex flex-column mt-2">
       <div className="flex-grow-1 overflow-auto">
         <Row className="mx-0">
+          <div>
+            <Story />
+          </div>
           <Col className="mx-5">
-            <Post />
-            <Post />
             <Post />
           </Col>
           <Col md={4} className="p-0">

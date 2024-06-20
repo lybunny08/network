@@ -8,12 +8,17 @@ import Discover from './views/Discover';
 import Reels from './views/Reels';
 import Messages from './views/Messages';
 import Notifications from './views/Notifications';
-import Creat from './views/Creat';
+import Create from './views/Create';
 import Profil from './views/Profil';
 import SplashScreen from './views/SplashScreen';
+import CreateModal from './components/CreateModal';
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleShowModal = () => setShowModal(true);
+  const handleHideModal = () => setShowModal(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,7 +36,7 @@ function App() {
         <>
           <PageLoader />
           <div className="d-flex">
-            <Sidebar />
+            <Sidebar handleShowModal={handleShowModal} />
             <div className="flex-grow-1" style={{ marginLeft: '340px', paddingTop: '0', marginTop: '0' }}>
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -40,9 +45,10 @@ function App() {
                 <Route path="/reels" element={<Reels />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/notifications" element={<Notifications />} />
-                <Route path="/creat" element={<Creat />} />
+                <Route path="/create" element={<Create />} />
                 <Route path="/profil" element={<Profil />} />
               </Routes>
+              {showModal && <CreateModal show={showModal} onHide={handleHideModal} />}
             </div>
           </div>
         </>

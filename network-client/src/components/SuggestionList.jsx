@@ -1,13 +1,17 @@
 import React from 'react';
 import { ListGroup } from 'react-bootstrap';
+import img1 from '../assets/img1.png';
+import img2 from '../assets/img2.png';
+import img3 from '../assets/img3.png';
+import img4 from '../assets/img4.png';
 
 const SuggestionList = () => {
   const suggestions = [
-    { name: 'sarahtxxxx646', avatar: 'https://via.placeholder.com/50' },
-    { name: 'rojormiadamahefla', avatar: 'https://via.placeholder.com/50' },
-    { name: 'gregoire_d_cekah', avatar: 'https://via.placeholder.com/50' },
-    { name: 'julia_sdr', avatar: 'https://via.placeholder.com/50' },
-    { name: 'infantsoehergc', avatar: 'https://via.placeholder.com/50' },
+    { name: 'sarahtxxxx646', avatar: img1 },
+    { name: 'rojormiadamahefla', avatar: img2 },
+    { name: 'gregoire_d_cekah', avatar: img3 },
+    { name: 'julia_sdr', avatar: img4 },
+    // Ajoutez d'autres suggestions au besoin
   ];
 
   return (

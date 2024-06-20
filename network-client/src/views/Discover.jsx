@@ -3,7 +3,7 @@ import SuggestionList from '../components/SuggestionList'
 
 const Discover = () => {
   return (
-              <SuggestionList />
+        <SuggestionList />
   );
 };
 

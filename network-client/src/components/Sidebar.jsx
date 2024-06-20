@@ -1,11 +1,10 @@
-// Sidebar.jsx
 import React from 'react';
 import { Nav } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { LinkContainer } from 'react-router-bootstrap';
 import { FaHome, FaSearch, FaCompass, FaRegPlayCircle, FaRegPaperPlane, FaRegHeart, FaRegPlusSquare, FaRegUserCircle, FaEllipsisH } from 'react-icons/fa';
 
-const Sidebar = () => {
+const Sidebar = ({ handleShowModal }) => {
   return (
     <div className="d-flex flex-column border-end  position-fixed top-0 start-0" style={{ width: '250px', paddingTop: '0', marginTop: '0' }}>
       <Nav className="flex-column mt-4">
@@ -40,11 +39,9 @@ const Sidebar = () => {
             <FaRegHeart className="me-3" style={{ fontSize: '25px' }} /> Notifications
           </Nav.Link>
         </LinkContainer>
-        <LinkContainer to="/creat">
-          <Nav.Link className="d-flex align-items-center text-dark mb-3 mx-3 pe-5">
-            <FaRegPlusSquare className="me-3" style={{ fontSize: '25px' }}  /> Create
-          </Nav.Link>
-        </LinkContainer>
+        <Nav.Link className="d-flex align-items-center text-dark mb-3 mx-3 pe-5" onClick={handleShowModal}>
+          <FaRegPlusSquare className="me-3" style={{ fontSize: '25px' }} /> Create
+        </Nav.Link>
         <LinkContainer to="/profil">
           <Nav.Link className="d-flex align-items-center text-dark mb-3 mx-3 pe-5">
             <FaRegUserCircle className="me-3" style={{ fontSize: '25px' }} /> Profil
