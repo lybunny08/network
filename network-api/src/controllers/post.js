@@ -478,49 +478,63 @@ exports.likeReply = (req, res, next) => {
   });
 };
 
-exports.getPersonalsizedPosts = (req, res, next) => {
-  User.findById(req.auth.userId)
-    .select('location favoriteHashtags searches likedPosts followers followed')
-    .then(user => {
-      const isAddedWithinLast7Days = (dateString) => {
-        const addedAtDate = new Date(dateString);
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        return addedAtDate >= sevenDaysAgo;
-      };
+exports.getPersonalsizedPosts = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.auth.userId)
+      .select('location favoriteHashtags searches likedPosts followers followed')
+      .exec();
 
-      const removeDuplicate = (array) => {
-        let unique = [];
-        array.forEach(data => {
-          if(unique.indexOf(data) === -1) {
-            unique.push(data);
-          }
-        });
-        return unique;
-      }
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-      const usersFollowed = user.followed; // on vas voir ceux qui on des publications récentes
-      const usersFollowers = user.followed; // on vas voir ceux qui on des publications récentes
-      const searches = user.searches; // filtre en fonction de la date, on prend les mot clés
+    const isAddedWithinLast7Days = (dateString) => {
+      const addedAtDate = new Date(dateString);
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      return addedAtDate >= sevenDaysAgo;
+    };
 
-      /*  on vas melanger les hashtags récents (ok)
-          on prends les publication récent des users suivie et suiveurs
-          on cherches les post récents avec les mots clé de searches
-      */
+    const removeDuplicate = (array) => Array.from(new Set(array));
 
-      // filtre des hashtags péféré
-      let currentFavoriteHashtags= [] 
-      user.favoriteHashtags.forEach(hastag => {
-        if (isAddedWithinLast7Days(hastag.addedAt.toString())) {
-          currentFavoriteHashtags.push(hastag.hashtag);
+    // Prendre l'id des utilisateurs suivis et des utilisateurs qui suivent
+    const usersFollowedId = user.followed.map(userFollowed => userFollowed.userId);
+    const usersFollowerId = user.followers.map(userFollower => userFollower.userId);
+
+    // Filtre des mots-clés des recherches
+    let searchKeys = user.searches
+      .filter(search => isAddedWithinLast7Days(search.date.toString()))
+      .map(search => search.searchKey);
+    searchKeys = removeDuplicate(searchKeys);
+
+    // Filtre des hashtags préférés
+    let currentFavoriteHashtags = user.favoriteHashtags
+      .filter(hastag => isAddedWithinLast7Days(hastag.addedAt.toString()))
+      .map(hastag => hastag.hashtag);
+    currentFavoriteHashtags = removeDuplicate(currentFavoriteHashtags);
+
+    // Prend les posts en fonction des hashtags, des utilisateurs suivis/suiveurs, et des mots-clés de recherche
+    const posts = await Post.find({
+      $and: [
+        {
+          $or: [
+            { createdAt: { $gt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
+            { updatedAt: { $gt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }
+          ]
+        },
+        {
+          $or: [
+            { hashtags: { $in: currentFavoriteHashtags } },
+            { authorId: { $in: usersFollowedId.concat(usersFollowerId) } },
+            { caption: { $in: searchKeys } }
+          ]
         }
-      });
-      currentFavoriteHashtags = removeDuplicate(currentFavoriteHashtags);
-      // prendres les punlications récent qui contient les tages, limit ?
-
-      return res.status(200).json(currentFavoriteHashtags);
-
+      ]
     })
-    .catch(error => {
-        res.status(500).json({ error });
-  });
+    .sort({ createdAt: -1, updatedAt: -1 })
+    .exec();
+
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({ error });
+  }
 };
