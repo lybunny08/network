@@ -23,11 +23,16 @@ const contentSchema = new mongoose.Schema({
     _id: false // evite la création d'un id
 });
 
+const authorSchema = new mongoose.Schema({
+    authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userName: { type: String, required: true }
+});
+
 const replySchema = new mongoose.Schema({
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     content: contentSchema,
     likes: [{
-        authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        author: authorSchema,
         date: { type: Date, required: true, default: Date.now }
     }],
     createdAt: { type: Date, required: true, default: Date.now },
@@ -38,7 +43,7 @@ const commentSchema = new mongoose.Schema({
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     content: contentSchema,
     likes: [{
-        authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        author: authorSchema,
         date: { type: Date, required: true, default: Date.now }
     }],
     replies: [replySchema],
@@ -53,9 +58,9 @@ const postSchema = new mongoose.Schema({
         validate: [arrayLimit, '{PATH} dois avoir au moins un hashtag']
     },
     fileUrl: { type: String },
-    authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    author: authorSchema,
     likes: [{
-        authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        author: authorSchema,
         date: { type: Date, required: true, default: Date.now }
     }],
     comments: [commentSchema],
