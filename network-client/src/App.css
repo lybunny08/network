@@ -40,3 +40,15 @@
 .read-the-docs {
   color: #888;
 }
+
+
+
+/* App.css */
+.splash-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #fff; /* Vous pouvez ajuster la couleur de fond */
+  font-size: 24px; /* Vous pouvez ajuster la taille du texte */
+}
