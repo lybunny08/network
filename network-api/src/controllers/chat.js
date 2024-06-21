@@ -15,5 +15,11 @@ exports.chat = async (req, res, next) => {
 };
 
 exports.getNetwork = async (req, res, next) => {
-
+    try {
+        const user = await User.findById(req.auth.userId).select('followed followers').exec();
+        res.status(200).json(user);
+    }
+    catch(error) {
+        res.status(500).json({error});
+    }
 };

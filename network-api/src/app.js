@@ -5,6 +5,7 @@ const path = require('path');
 
 const userRoutes = require('./routes/user');
 const postRoutes = require('./routes/post');
+const chatRoutes = require('./routes/chat');
 
 const app = express();
 
@@ -26,6 +27,7 @@ mongoose.connect('mongodb://localhost:27017/network', { serverSelectionTimeoutMS
 
 app.use('/api/auth', userRoutes);
 app.use('/api/post', postRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('/api',(_, res) =>{
     res.json({  message: 'welcom to network-api' });
