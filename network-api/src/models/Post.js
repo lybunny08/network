@@ -25,7 +25,7 @@ const contentSchema = new mongoose.Schema({
 
 const authorSchema = new mongoose.Schema({
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    userName: { type: String, ref: 'User', required: true }
+    userName: { type: String, required: true }
 });
 
 const replySchema = new mongoose.Schema({

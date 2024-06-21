@@ -494,6 +494,9 @@ exports.getPersonalsizedPosts = async (req, res, next) => {
     currentFavoriteHashtags = removeDuplicate(currentFavoriteHashtags);
 
     // Prend les posts en fonction des hashtags, des utilisateurs suivis/suiveurs, et des mots-clés de recherche
+    const limit = parseInt(req.body.limit) || 20;
+    const offset = parseInt(req.body.offset) || 0;
+
     const posts = await Post.find({
       $and: [
         {
@@ -505,17 +508,27 @@ exports.getPersonalsizedPosts = async (req, res, next) => {
         {
           $or: [
             { hashtags: { $in: currentFavoriteHashtags } },
-            { authorId: { $in: usersFollowedId.concat(usersFollowerId) } },
-            { caption: { $in: searchKeys } }
+            { 'author.authorId': { $in: usersFollowedId.concat(usersFollowerId) } },
+            { caption: { $in: searchKeys } },
           ]
         }
       ]
-    })
-    .sort({ createdAt: -1, updatedAt: -1 })
-    .exec();
+    }).skip(offset).limit(limit).sort({ createdAt: -1, updatedAt: -1 }).exec();
 
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ error });
   }
+};
+
+exports.search = async (req, res, next) => {
+
+};
+
+exports.discover = async (req, res, next) => {
+
+};
+
+exports.reel = async (req, res, next) => {
+
 };

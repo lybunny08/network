@@ -138,3 +138,15 @@ exports.unfollow = (req, res, next) => {
         })
         .catch(error => res.status(500).json({ error }));
 };
+
+exports.modifyProfil = (req, res, next) => {
+
+}
+
+exports.changePassword = (req, res, next) => {
+
+}
+
+exports.followSuggest = (req, res, next) => {
+    
+}
