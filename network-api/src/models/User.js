@@ -17,9 +17,14 @@ const likedPostSchema = new mongoose.Schema({
 });
 
 const followerSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { 
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userName: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true }
+  },
   addedAt: { type: Date, required: true, default: Date.now }
-});
+}, {_id: false});
 
 const profileImageSchema = new mongoose.Schema({
   imageUrl: { type: String, required: true },
