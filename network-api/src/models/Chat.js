@@ -1,33 +1,20 @@
 const mongoose = require('mongoose');
 
 const chatSchema = new mongoose.Schema({
-    usersId: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }],
-    createAt: { type: Date, default: Date.now, required: true },
-    UpdateAt: { type: Date },
-    messages: [{
-        author: {
-            authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-            userName: { type: String, required: true },
-            date: { type: Date, default: Date.now, required: true}
-        },
-        content: [{
-            text: { 
-                type: String,
-                validate: {
-                    validator: function() { return this.text || this.fileUrl;},
-                    message: 'Content dois au moins avoir un text ou une file.'
-                }
-            },
-            fileUrl: { 
-                type: String,
-                validate: {
-                    validator: function() { return this.text || this.fileUrl; },
-                    message: 'Content dois au moins avoir un text ou une file.'
-                }
-            },
-            date: { type: Date, default: Date.now, required: true }
-        }, {  _id: false }]
+    users: [{
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        userName: { type: String, required: true },
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true }
     }],
+    messages: [{
+        authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        content: { type: String, required: true},
+        view: { type: Boolean, required: true, default: false },
+        date: { type: Date, default: Date.now, required: true},
+    }],
+    createAt:  { type: Date, default: Date.now, required: true },
+    updateAt: { type: Date }
 });
 
 module.exports = mongoose.model('Chat', chatSchema);
