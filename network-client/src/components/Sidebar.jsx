@@ -47,7 +47,7 @@ const Sidebar = ({ handleShowModal }) => {
             <FaRegUserCircle className="me-3" style={{ fontSize: '25px' }} /> Profil
           </Nav.Link>
         </LinkContainer>
-        <Nav.Link className="d-flex align-items-center text-dark mb-3 mx-3 pe-3">
+        <Nav.Link className="d-flex align-items-center text-dark  mx-3 pe-3">
           <FaEllipsisH className="me-3" style={{ fontSize: '25px' }} /> Plus
         </Nav.Link>
       </Nav>
