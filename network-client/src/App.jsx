@@ -36,8 +36,9 @@ function App() {
         <>
           <PageLoader />
           <div className="d-flex">
-            <Sidebar handleShowModal={handleShowModal} />
-            <div className="flex-grow-1" style={{ marginLeft: '340px', paddingTop: '0', marginTop: '0' }}>
+              <div className=''>
+                <Sidebar handleShowModal={handleShowModal} />
+            </div>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/search" element={<Search />} />
@@ -49,7 +50,6 @@ function App() {
                 <Route path="/profil" element={<Profil />} />
               </Routes>
               {showModal && <CreateModal show={showModal} onHide={handleHideModal} />}
-            </div>
           </div>
         </>
       )}
