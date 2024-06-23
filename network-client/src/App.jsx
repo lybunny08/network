@@ -38,7 +38,7 @@ function App() {
           <div className="d-flex">
               <div className=''>
                 <Sidebar handleShowModal={handleShowModal} />
-            </div>
+              </div>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/search" element={<Search />} />

@@ -5,33 +5,33 @@ import ChatRequstes from '../components/chat/ChatRequests';
 import ChatList from '../components/chat/ChatList';
 
 const Messages = () => {
-  const chatListChoicesStyles = {
+  const chatStyles = {
     focus: 'fw-bold',
     normal: 'fw-normal'
   }
-  const [chatListView, setChatListView] = useState('messages');
-  const [chatListChoiceMessageStyle, setChatListChoiceMessageStyle] = useState(chatListChoicesStyles.focus);
-  const [chatListChoiceRequestStyle, setChatListChoiceRequestStyle] = useState(chatListChoicesStyles.normal);
+  const [chatView, setChatView] = useState('messages');
+  const [chatMessageStyle, setChatMessageStyle] = useState(chatStyles.focus);
+  const [chatRequestStyle, setChatRequestStyle] = useState(chatStyles.normal);
   
-  const switchChatListView = (value) => () => {
-    setChatListView(value);
+  const HandleswitchChatView = (value) => () => {
+    setChatView(value);
   }
 
   useEffect(() => {
-    switch (chatListView) {
+    switch (chatView) {
       case 'messages':
-        setChatListChoiceMessageStyle(chatListChoicesStyles.focus);
-        setChatListChoiceRequestStyle(chatListChoicesStyles.normal);
+        setChatMessageStyle(chatStyles.focus);
+        setChatRequestStyle(chatStyles.normal);
         break;
       case 'requests':
-        setChatListChoiceMessageStyle(chatListChoicesStyles.normal);
-        setChatListChoiceRequestStyle(chatListChoicesStyles.focus);
+        setChatMessageStyle(chatStyles.normal);
+        setChatRequestStyle(chatStyles.focus);
         break
       default:
         console.log("not allowed.");
         break;
     }
-  }, [chatListView]);
+  }, [chatView]);
 
   return (
       <div className='d-flex flex-row'>
@@ -44,19 +44,19 @@ const Messages = () => {
           <div className='mt-3' id='chat-list-body'>
             <div className='row text-center' id='chat-list-choices'>
               <button 
-                className={`btn btn-link col text-decoration-none text-dark ${chatListChoiceMessageStyle}`}
+                className={`btn btn-link col text-decoration-none text-dark ${chatMessageStyle}`}
                 type="button"
-                onClick={switchChatListView('messages')} >Messages</button>
+                onClick={HandleswitchChatView('messages')} >Messages</button>
               <button  
-                className={`btn btn-link col text-decoration-none text-dark ${chatListChoiceRequestStyle}`}
+                className={`btn btn-link col text-decoration-none text-dark ${chatRequestStyle}`}
                 type="button"
-                onClick={switchChatListView('requests')}>Demandes</button>
+                onClick={HandleswitchChatView('requests')}>Demandes</button>
             </div>
             <div id='chat-list' 
               style={{ height: '28rem'}} 
               className='overflow-y-auto mt-3'>
                 { 
-                  chatListView == 'requests' ? (
+                  chatView == 'requests' ? (
                     <ChatRequstes />
                   ) : (
                     <ChatList />
