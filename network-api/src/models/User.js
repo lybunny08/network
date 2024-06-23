@@ -17,13 +17,46 @@ const likedPostSchema = new mongoose.Schema({
 });
 
 const followerSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { 
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userName: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true }
+  },
   addedAt: { type: Date, required: true, default: Date.now }
 });
+
+const notificationsSchema = new mongoose.Schema({
+  content: { type: String, required: true },
+  date: { type: Date, default: Date.now, required: true },
+  view: { type: Boolean, default: false, required: true }
+})
 
 const profileImageSchema = new mongoose.Schema({
   imageUrl: { type: String, required: true },
   createdAt: { type: Date, required: true, default: Date.now }
+});
+
+const connectionSchema = new mongoose.Schema({
+  user: { 
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userName: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true }
+  },
+  sendedAt: { type: Date, default: Date.now, required: true },
+  isAccepted: { type: Boolean }
+});
+
+const networkSchema = new mongoose.Schema({
+  chatId: { type: mongoose.Schema.Types.ObjectId },
+  user: { 
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userName: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true }
+  },
+  addedAt: { type: Date, required: true, default: Date.now }
 });
 
 const userSchema = new mongoose.Schema({
@@ -32,12 +65,15 @@ const userSchema = new mongoose.Schema({
   lastName: { type: String, required: true, minlength: 1, maxlength: 50 },
   birthDate: { type: Date, required: true },
   location: { type: String, required: false, maxlength: 100 },
+  profileImages: [profileImageSchema],
   favoriteHashtags: [hashtagSchema],
   searches: [searchSchema],
-  likedPosts: [likedPostSchema],
   followers: [followerSchema],
-  followed: [followerSchema], // Réutilisation du schema `followerSchema`
-  profileImages: [profileImageSchema],
+  followed: [followerSchema],
+  notifications: [notificationsSchema],
+  likedPosts: [likedPostSchema],
+  networks: [networkSchema],
+  connectionRequests: [connectionSchema],
   email: { type: String, required: true, unique: true, match: /.+\@.+\..+/ },
   password: { type: String, required: true, minlength: 6 },
   createdAt: { type: Date, required: true, default: Date.now }
