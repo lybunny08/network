@@ -6,7 +6,7 @@ import { FaHome, FaSearch, FaCompass, FaRegPlayCircle, FaRegPaperPlane, FaRegHea
 
 const Sidebar = ({ handleShowModal }) => {
   return (
-    <div className="d-flex flex-column border-end  position-fixed top-0 start-0" style={{ width: '250px', paddingTop: '0', marginTop: '0' }}>
+    <div className="d-flex flex-column border-end">
       <Nav className="flex-column mt-4">
         <span className="fw-bold fs-4 mx-4 mb-4 text-dark">Network</span>
         <LinkContainer to="/">
