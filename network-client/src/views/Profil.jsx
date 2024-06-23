@@ -1,8 +1,17 @@
 import React from 'react';
 import { Container, Row, Col, Image, Button } from 'react-bootstrap';
 import img4 from '../assets/img4.png';
+import { useHistory } from 'react-router-dom';
 
-const Profil = () => {
+const Profil = ({ handleLogout }) => {
+  const history = useHistory();
+
+  const handleLogoutClick = () => {
+    handleLogout(); // Appel à la fonction handleLogout fournie par les props
+    // Vous pouvez également ajouter une redirection après la déconnexion si nécessaire
+    history.push('/login'); // Redirige l'utilisateur vers la page de connexion
+  };
+
   return (
     <Container className="pb-5">
       <Row className="justify-content-start">
@@ -20,6 +29,9 @@ const Profil = () => {
                 <span>mamtianalydien</span>
                 <Button variant="outline-secondary" className="mx-5">
                   Modifier le profil
+                </Button>
+                <Button variant="outline-secondary" onClick={handleLogoutClick}>
+                  Déconnexion
                 </Button>
               </div>
               <div className="d-flex mb-4">
