@@ -6,23 +6,19 @@ import SuggestionList from '../components/SuggestionList';
 
 const Home = () => {
   return (
-    <Container fluid className="d-flex flex-column mt-2">
-      <div className="flex-grow-1 overflow-auto">
-        <Row className="mx-0">
-          <div>
-            <Story />
-          </div>
-          <Col className="mx-5 overflow-auto">
-            <Post />
-          </Col>
-          <Col md={4} className="p-0">
-            <div className="d-flex flex-column align-items-center">
-              <SuggestionList />
-            </div>
-          </Col>
-        </Row>
+    <div 
+      className="d-flex flex-row overflow-y-auto" 
+      style={{ height: '38em',  marginLeft:'4.5em' }}>
+      <div id='home-main'
+        className='mt-3'>
+          <Story />
+          <Post />
       </div>
-    </Container>
+      <div
+        className='mt-5'>
+        <SuggestionList />
+      </div>
+    </div>
   );
 };
 

@@ -46,34 +46,34 @@ function App() {
         <SplashScreen />
       ) : (
         <>
-          <PageLoader />
-          <div className="d-flex">
-            {isAuthenticated && <Sidebar handleShowModal={handleShowModal} handleLogout={handleLogout} />}
-            <div className="flex-grow-1" style={{ marginLeft: isAuthenticated ? '340px' : '0', paddingTop: '0', marginTop: '0' }}>
-              <Routes>
-                {!isAuthenticated ? (
-                  <>
-                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="*" element={<Navigate to="/login" />} />
-                  </>
-                ) : (
-                  <>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/discover" element={<Discover />} />
-                    <Route path="/reels" element={<Reels />} />
-                    <Route path="/messages" element={<Messages />} />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/create" element={<Create />} />
-                    <Route path="/profil" element={<Profil handleLogout={handleLogout} />} />
-                    <Route path="*" element={<Navigate to="/" />} />
-                  </>
-                )}
-              </Routes>
-              {showModal && <CreateModal show={showModal} onHide={handleHideModal} />}
+          <div className='d-flex container'>
+            <PageLoader />
+              {isAuthenticated && <Sidebar handleShowModal={handleShowModal} handleLogout={handleLogout} />}
+              <div className="flex-grow-1">
+                <Routes>
+                  {!isAuthenticated ? (
+                    <>
+                      <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="*" element={<Navigate to="/login" />} />
+                    </>
+                  ) : (
+                    <>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/search" element={<Search />} />
+                      <Route path="/discover" element={<Discover />} />
+                      <Route path="/reels" element={<Reels />} />
+                      <Route path="/messages" element={<Messages />} />
+                      <Route path="/notifications" element={<Notifications />} />
+                      <Route path="/create" element={<Create />} />
+                      <Route path="/profil" element={<Profil handleLogout={handleLogout} />} />
+                      <Route path="*" element={<Navigate to="/" />} />
+                    </>
+                  )}
+                </Routes>
+                {showModal && <CreateModal show={showModal} onHide={handleHideModal} />}
+              </div>
             </div>
-          </div>
         </>
       )}
     </Router>
