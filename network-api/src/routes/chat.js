@@ -6,6 +6,11 @@ const chatCtrl = require('../controllers/chat');
 
 const router = express.Router();
 
-router.get('/', auth, chatCtrl.getNetwork);
+router.get('/', auth, chatCtrl.getAllChat);
+
+router.get('/search', auth, chatCtrl.searchChat);
+
+router.get('/:id', auth, chatCtrl.getOneChat);
+router.post('/:id', auth, multer, chatCtrl.chat);
 
 module.exports = router;
