@@ -12,7 +12,7 @@ const Home = () => {
           <div>
             <Story />
           </div>
-          <Col className="mx-5">
+          <Col className="mx-5 overflow-auto">
             <Post />
           </Col>
           <Col md={4} className="p-0">
