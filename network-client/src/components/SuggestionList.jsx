@@ -15,14 +15,20 @@ const SuggestionList = () => {
   ];
 
   return (
-    <ListGroup className="border-0 mb-3 mt-0 mx-5">
+    <>
       {suggestions.map((suggestion, index) => (
-        <ListGroup.Item key={index} className="border-0 py-2 px-3 d-flex align-items-center">
-          <img src={suggestion.avatar} alt={suggestion.name} style={{ width: '45px', height: '45px', borderRadius: '50%', marginRight: '10px' }} />
-          <span className="text-muted small">{suggestion.name}</span>
-        </ListGroup.Item>
+        <div key={index} className="mb-2" style={{ width:"100%"}}>
+          <button type='button' className='d-flex' style={{ width:"100%"}}>
+            <div id='img'>
+              <img src={suggestion.avatar} 
+                alt={suggestion.name} 
+                style={{ width: '45px', height: '45px', borderRadius: '50%', marginRight: '10px' }} />
+            </div>
+            <div className="text-muted small">{suggestion.name}</div>
+          </button>
+        </div>
       ))}
-    </ListGroup>
+    </>
   );
 };
 
