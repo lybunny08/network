@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 import { Container, Row, Col, Form, Button, Image } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import logo from '../assets/logo.png'; // Remplacez par le chemin de votre logo
 
 const Login = ({ onLogin }) => {
-  const handleSubmit = (event) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Ajoutez ici la logique de connexion
-    onLogin(); // Appelez la fonction onLogin pour mettre à jour l'état de connexion
+    try {
+      const response = await axios.post('http://localhost:3000/api/login', {
+        email,
+        password
+      });
+      localStorage.setItem('token', response.data.token);
+      onLogin(); // Appelez la fonction onLogin pour mettre à jour l'état de connexion
+    } catch (err) {
+      setError('Invalid credentials');
+    }
   };
 
   return (
@@ -21,11 +34,24 @@ const Login = ({ onLogin }) => {
             <h2 className="text-center mb-4">Connexion</h2>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail" className="mb-3">
-                <Form.Control type="email" placeholder="Adresse e-mail" />
+                <Form.Control
+                  type="email"
+                  placeholder="Adresse e-mail"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </Form.Group>
               <Form.Group controlId="formBasicPassword" className="mb-3">
-                <Form.Control type="password" placeholder="Mot de passe" />
+                <Form.Control
+                  type="password"
+                  placeholder="Mot de passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </Form.Group>
+              {error && <p className="text-danger">{error}</p>}
               <Button variant="primary" type="submit" className="w-100 mb-3">
                 Se connecter
               </Button>
