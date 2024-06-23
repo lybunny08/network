@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ProgressBar } from 'react-bootstrap';
 import Sidebar from './components/Sidebar';
 import Home from './views/Home';
@@ -12,9 +12,12 @@ import Create from './views/Create';
 import Profil from './views/Profil';
 import SplashScreen from './views/SplashScreen';
 import CreateModal from './components/CreateModal';
+import Login from './views/Login';
+import Register from './views/Register';
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   const handleShowModal = () => setShowModal(true);
@@ -28,6 +31,15 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    // Ajoutez d'autres logiques de déconnexion ici si nécessaire
+  };
+
   return (
     <Router>
       {loading ? (
@@ -36,20 +48,31 @@ function App() {
         <>
           <PageLoader />
           <div className="d-flex">
-              <div className=''>
-                <Sidebar handleShowModal={handleShowModal} />
-            </div>
+            {isAuthenticated && <Sidebar handleShowModal={handleShowModal} handleLogout={handleLogout} />}
+            <div className="flex-grow-1" style={{ marginLeft: isAuthenticated ? '340px' : '0', paddingTop: '0', marginTop: '0' }}>
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/discover" element={<Discover />} />
-                <Route path="/reels" element={<Reels />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/notifications" element={<Notifications />} />
-                <Route path="/create" element={<Create />} />
-                <Route path="/profil" element={<Profil />} />
+                {!isAuthenticated ? (
+                  <>
+                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="*" element={<Navigate to="/login" />} />
+                  </>
+                ) : (
+                  <>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/search" element={<Search />} />
+                    <Route path="/discover" element={<Discover />} />
+                    <Route path="/reels" element={<Reels />} />
+                    <Route path="/messages" element={<Messages />} />
+                    <Route path="/notifications" element={<Notifications />} />
+                    <Route path="/create" element={<Create />} />
+                    <Route path="/profil" element={<Profil handleLogout={handleLogout} />} />
+                    <Route path="*" element={<Navigate to="/" />} />
+                  </>
+                )}
               </Routes>
               {showModal && <CreateModal show={showModal} onHide={handleHideModal} />}
+            </div>
           </div>
         </>
       )}
