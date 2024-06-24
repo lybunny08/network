@@ -1,7 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { Container, Row, Col, Image, Button } from 'react-bootstrap';
 import img4 from '../assets/img4.png';
 import { useNavigate } from 'react-router-dom';
+
+import { getUser } from '../helper/requests';
 
 const Profil = ({ user, handleLogout }) => {
   const navigate = useNavigate();
@@ -10,6 +12,20 @@ const Profil = ({ user, handleLogout }) => {
     handleLogout();
     navigate('/login');
   };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const response = await getUser(localStorage.getItem('userId'));
+
+      if (response.error) {
+        console.log(response.error);
+      } else {
+        console.log(response);
+      }
+    }
+
+    fetchUser();
+  }, []);
 
   // Vérifiez si user est défini
   const userName = user?.userName || 'Nom inconnu';

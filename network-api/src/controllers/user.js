@@ -64,7 +64,7 @@ exports.login = (req, res, next) => {
 
 exports.follow = (req, res, next) => {
     // Trouver l'utilisateur à suivre
-    User.findById(req.params.id)
+    User.findById(req.params.userId)
         .select('followers userName firstName lastName')
         .then(userToFollow => {
             if (!userToFollow) {
@@ -124,7 +124,7 @@ exports.follow = (req, res, next) => {
 
 exports.unfollow = (req, res, next) => {
     // Trouver l'utilisateur à ne plus suivre
-    User.findById(req.params.id)
+    User.findById(req.params.userId)
         .select('followers')
         .then(userToUnfollow => {
             if (!userToUnfollow) {
@@ -170,11 +170,16 @@ exports.unfollow = (req, res, next) => {
 
 exports.sendConnectionRequest = async (req, res, next) => {
     try {
-        const userReceiveConnectionReq = await User.findById(req.params.id).select('notifications connectionRequests networks').exec();
+        const userReceiveConnectionReq = await User.findById(req.params.userId)
+            .select('notifications connectionRequests networks').exec();
+        
         if(!userReceiveConnectionReq) {
             return res.status(404).json({ error: 'User not found.' })
         }
-        const userDoConnectionReq = await User.findById(req.auth.userId).select('userName firstName lastName').exec();
+
+        const userDoConnectionReq = await User.findById(req.auth.userId)
+            .select('userName firstName lastName profileImages').exec();
+
         const indexInConnectionRequests = userReceiveConnectionReq.connectionRequests.findIndex(connectionRequest => connectionRequest.user.userId.equals(userDoConnectionReq._id));
 
         // Si la demande existe mais qu'il n'a pas encore été répendu
@@ -196,7 +201,8 @@ exports.sendConnectionRequest = async (req, res, next) => {
                     userId: userDoConnectionReq._id,
                     userName: userDoConnectionReq.userName,
                     firstName: userDoConnectionReq.firstName,
-                    lastName: userDoConnectionReq.lastName
+                    lastName: userDoConnectionReq.lastName,
+                    profilImageUrl: userDoConnectionReq.profileImages[0].imageUrl
                 }
             });
 
@@ -230,7 +236,7 @@ exports.responseConnectionRequest = async (req, res, next) => {
     try {
         // Trouver l'utilisateur qui reçoit la demande de connexion
         const userReceivedConnectionReq = await User.findById(req.auth.userId)
-                                            .select('userName connectionRequests networks lastName firstName')
+                                            .select('userName connectionRequests networks lastName firstName profileImages')
                                             .exec();
         if (!userReceivedConnectionReq) {
             return res.status(404).json({ error: 'Receiving user not found.' });
@@ -253,7 +259,7 @@ exports.responseConnectionRequest = async (req, res, next) => {
         
         // Trouver l'utilisateur qui a fait la demande de connexion
         const userDoConnectionReq = await User.findById(userReceivedConnectionReq.connectionRequests[indexInConnectionRequests].user.userId)
-                                        .select('notifications networks userName lastName firstName')
+                                        .select('notifications networks userName lastName firstName profileImages')
                                         .exec();
         if (!userDoConnectionReq) {
             return res.status(404).json({ error: 'Requesting user not found.' });
@@ -272,12 +278,14 @@ exports.responseConnectionRequest = async (req, res, next) => {
                         userId: userReceivedConnectionReq._id,
                         userName: userReceivedConnectionReq.userName,
                         firstName: userReceivedConnectionReq.firstName,
-                        lastName: userReceivedConnectionReq.lastName
+                        lastName: userReceivedConnectionReq.lastName,
+                        profilImageUrl: userReceivedConnectionReq.profileImages[0].imageUrl
                     }, {
                         userId: userDoConnectionReq._id,
                         userName: userDoConnectionReq.userName,
                         firstName: userDoConnectionReq.firstName,
-                        lastName: userDoConnectionReq.lastName
+                        lastName: userDoConnectionReq.lastName,
+                        profilImageUrl: userDoConnectionReq.profileImages[0].imageUrl
                 }]
             });
             // Sauvegarder le chat et obtenir l'ID du chat
@@ -291,7 +299,8 @@ exports.responseConnectionRequest = async (req, res, next) => {
                     userId: userDoConnectionReq._id,
                     userName: userDoConnectionReq.userName,
                     firstName: userDoConnectionReq.firstName,
-                    lastName: userDoConnectionReq.lastName
+                    lastName: userDoConnectionReq.lastName,
+                    profilImageUrl: userDoConnectionReq.profileImages[0].imageUrl
                 }
             });
 
@@ -301,7 +310,8 @@ exports.responseConnectionRequest = async (req, res, next) => {
                     userId: userReceivedConnectionReq._id,
                     userName: userReceivedConnectionReq.userName,
                     firstName: userReceivedConnectionReq.firstName,
-                    lastName: userReceivedConnectionReq.lastName
+                    lastName: userReceivedConnectionReq.lastName,
+                    profilImageUrl: userReceivedConnectionReq.profileImages[0].imageUrl
                 }
             });
             await userDoConnectionReq.save();
@@ -378,7 +388,13 @@ exports.getUser = async (req, res, next) => {
         if(!user) {
             return res.satus(404).json({ error: 'User not found'});
         }
-      
+
+        // Compter le nombre de documents où l'auteur a l'ID spécifié
+        const postCount = await Post.countDocuments({ 'author.authorId': userId });
+
+        // Convertir l'utilisateur en objet pour pouvoir le modifier
+        const userObject = user.toObject();
+
         // Calculer le nombre de followers et de personnes suivies
         const followers = userObject.followers.length;
         const following = userObject.followed.length;
@@ -408,5 +424,26 @@ exports.followSuggest = (req, res, next) => {
     
 };
 
-exports.search = async (req, res, next) => {
+exports.getConnectionRequests = async (req, res, next) => {
+    const userId = req.auth.userId;
+    try{
+        let connectionRequests = [];
+        const user = await User.findById(userId).select('connectionRequests').exec();
+        
+        if(!user) {
+            return res.status(404).josn({ message: "User not found."});
+        }
 
+        if(user.connectionRequests.leght > 0) {
+            connectionRequests = user.connectionRequests.filter(connectionRequest => !connectionRequest.hasOwnProperty("isAccepted"));
+        }
+
+        res.status(200).json(connectionRequests);
+    } catch(error) {
+        res.status(500).json({ error });
+    }
+}
+
+exports.search = async (req, res, next) => {
+    
+};

@@ -3,7 +3,7 @@ const Chat = require('../models/Chat');
 exports.chat = async (req, res, next) => {
     try {
         const chat = await Chat.findById(req.params.id).exec();
-
+        
         if(!chat) {
             res.status(404).json({ error: 'Chat not found.'});
         }
