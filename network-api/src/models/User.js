@@ -42,7 +42,8 @@ const connectionSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     userName: { type: String, required: true },
     firstName: { type: String, required: true },
-    lastName: { type: String, required: true }
+    lastName: { type: String, required: true },
+    profilImageUrl: { type: String, required: true }
   },
   sendedAt: { type: Date, default: Date.now, required: true },
   isAccepted: { type: Boolean }
@@ -54,7 +55,8 @@ const networkSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     userName: { type: String, required: true },
     firstName: { type: String, required: true },
-    lastName: { type: String, required: true }
+    lastName: { type: String, required: true },
+    profilImageUrl: { type: String, required: true },
   },
   addedAt: { type: Date, required: true, default: Date.now }
 });

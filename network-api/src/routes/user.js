@@ -5,19 +5,17 @@ const multer = require('../middlewares/multer-config');
 
 const router = express.Router();
 
-router.get('/:id', auth, userCtrl.getUser);
-router.patch('/:id', auth, multer, userCtrl.modifyProfil);
-
 router.post('/signup', userCtrl.signup);
 router.post('/login', userCtrl.login);
 
-router.patch('/follow/:id', auth, userCtrl.follow);
-router.delete('/follow/:id', auth, userCtrl.unfollow);
+router.get('/user/:id', auth, userCtrl.getUser);
+router.patch('/user/:id', auth, multer, userCtrl.modifyProfil);
 
-router.post('/connect/:id', auth, userCtrl.sendConnectionRequest);
+router.patch('/follow/:userId', auth, userCtrl.follow);
+router.delete('/follow/:userId', auth, userCtrl.unfollow);
+
+router.get('/connect', auth, userCtrl.getConnectionRequests);
+router.post('/connect/:userId', auth, userCtrl.sendConnectionRequest);
 router.patch('/connect/:connectReqId', auth, userCtrl.responseConnectionRequest);
-
-router.get('/network', auth, userCtrl.getNetworks);
-
 
 module.exports = router;
