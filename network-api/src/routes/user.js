@@ -8,7 +8,6 @@ const router = express.Router();
 router.get('/:id', auth, userCtrl.getUser);
 router.patch('/:id', auth, multer, userCtrl.modifyProfil);
 
-
 router.post('/signup', userCtrl.signup);
 router.post('/login', userCtrl.login);
 

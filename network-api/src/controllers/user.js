@@ -412,3 +412,7 @@ exports.getUser = async (req, res, next) => {
 exports.followSuggest = (req, res, next) => {
     
 };
+
+exports.search = async (req, res, next) => {
+    
+};

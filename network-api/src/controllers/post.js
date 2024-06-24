@@ -3,10 +3,15 @@ const User = require('../models/User');
 const fs = require('fs');
 
 exports.createPost = async (req, res, next) => {
+
+  if(!req.file) {
+    return res.status(400).json({ error: "File requied."});
+  }
+
   try {
     const user = await User.findById(req.auth.userId).select('userName').exec();
 
-    const postObject = req.file ? {
+    const postObject = {
       caption: req.body.caption,
       hashtags: req.body.hashtags,
       author: {
@@ -14,13 +19,6 @@ exports.createPost = async (req, res, next) => {
         userName: user.userName
       },
       fileUrl: `${req.protocol}://${req.get('host')}/files/${req.file.filename}`
-    } : {
-      caption: req.body.caption,
-      hashtags: req.body.hashtags, 
-      author: {
-        authorId: user._id,
-        userName: user.userName
-      }
     };
 
     const post = new Post(postObject);
@@ -46,19 +44,18 @@ exports.getOnePost = (req, res, next) => {
 };
 
 exports.modifyPost = (req, res, next) => {
+  const newCaption = req.body.content;
+  const newsHashtag = req.body.hashtags;
+
   Post.findById(req.params.id)
     .then((post) => {
       if (!post) {
         return res.status(404).json({ error: 'Post not found.' });
       }
 
-      const postObject = req.file ? {
-        caption: req.body.caption,
-        hashtags: req.body.hashtags,
-        fileUrl: `${req.protocol}://${req.get('host')}/files/${req.file.filename}`
-      } : { 
-        caption: req.body.caption,
-        hashtags: req.body.hashtags
+      const postObject =  {
+        caption: newCaption,
+        hashtags: newsHashtag
       };
 
       if (post.author.authorId != req.auth.userId) {
@@ -154,6 +151,7 @@ exports.likePost = async (req, res, next) => {
 };
 
 exports.commentPost = async (req, res, next) => {
+
   try {
     const post =  await Post.findById(req.params.id).select('likes hashtags').exec();
     if(!post) {
@@ -168,7 +166,6 @@ exports.commentPost = async (req, res, next) => {
         userName: user.userName
       },
       content: req.file ? {
-        text: req.body.comment,
         fileUrl: `${req.protocol}://${req.get('host')}/files/${req.file.filename}`
       } : {  text: req.body.comment }
     });
@@ -205,10 +202,11 @@ exports.modifyComment = async (req, res, next) => {
       }
 
       post.comments[indexInComments].content = req.file ? {
-        text: req.body.comment,
-        fileUrl:`${req.protocol}://${req.get('host')}/files/${req.file.filename}`
-      } : { 
-        text: req.body.comment
+        fileUrl:`${req.protocol}://${req.get('host')}/files/${req.file.filename}`,
+        text: ''
+        } : { 
+          text: req.body.comment,
+          fileUrl: ''
       };
       post.comments[indexInComments].updatedAt = Date.now(); // à trailler
 
@@ -302,7 +300,6 @@ exports.replyComment = async (req, res, next) => {
         userName: user.userName
       },
       content: {
-        text: req.body.reply,
         fileUrl: `${req.protocol}://${req.get('host')}/files/${req.file.filename}`
       }
     } : {
@@ -354,10 +351,11 @@ exports.modifyReply = (req, res, next) => {
         }
 
         post.comments[indexInComments].replies[indexInReplies].content = req.file ? {
-          text: req.body.reply,
+          text: '',
           fileUrl: `${req.protocol}://${req.get('host')}/files/${req.file.filename}`
         } : { 
-          text: req.body.reply
+          text: req.body.reply,
+          fileUrl: ''
         };
 
         post.comments[indexInComments].replies[indexInReplies].updatedAt = Date.now(); //
@@ -521,12 +519,30 @@ exports.getPersonalsizedPosts = async (req, res, next) => {
   }
 };
 
-exports.search = async (req, res, next) => {
+exports.getUserPosts = async (req, res, next) => {
+  const userId = req.params.userId;
+  const limit = parseInt(req.query.limit) || 20;
+  const offset = parseInt(req.query.offset) || 0;
 
-};
+  try{
+    const user = await User.findById(userId).select('_id').exec();
+    if(!user) {
+      return res.status(404).json({ error: "User not found."});
+    }
+
+    const posts = await Post.find({'author.authorId': userId})
+                    .select('fileUrl')
+                    .skip(offset).limit(limit)
+                    .sort({ createAt: -1}).exec();
+    
+    res.status(200).json(posts);
+  } catch(error) {
+    res.status(500).json({ error });
+  }
+}
 
 exports.discover = async (req, res, next) => {
-
+  
 };
 
 exports.reel = async (req, res, next) => {
