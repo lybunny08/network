@@ -4,9 +4,8 @@ import ChatCard from './ChatCard';
 const ChatRequstes = () => {
     return (
         <>
-            <ChatCard/>
+            hehe
         </>
     )
 }
-
 export default ChatRequstes;

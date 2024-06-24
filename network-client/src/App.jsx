@@ -76,11 +76,44 @@ function App() {
                 )}
               </Routes>
               {showModal && <CreateModal show={showModal} onHide={handleHideModal} />}
+    <div className='container-fluid'>
+        {
+          loading ? (
+            <SplashScreen />
+          ) : (
+          <Router>
+            <div className='d-flex w-100 h-100'>
+              <PageLoader />
+                {isAuthenticated && <Sidebar handleShowModal={handleShowModal} handleLogout={handleLogout} />}
+                <div className="flex-grow-1">
+                  <Routes>
+                    {!isAuthenticated ? (
+                      <>
+                        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="*" element={<Navigate to="/login" />} />
+                      </>
+                    ) : (
+                      <>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/search" element={<Search />} />
+                        <Route path="/discover" element={<Discover />} />
+                        <Route path="/reels" element={<Reels />} />
+                        <Route path="/messages" element={<Messages />} />
+                        <Route path="/notifications" element={<Notifications />} />
+                        <Route path="/create" element={<Create />} />
+                        <Route path="/profil" element={<Profil handleLogout={handleLogout} />} />
+                        <Route path="*" element={<Navigate to="/" />} />
+                      </>
+                    )}
+                  </Routes>
+                  {showModal && <CreateModal show={showModal} onHide={handleHideModal} />}
+                </div>
             </div>
-          </div>
-        </>
+          </Router>
       )}
-    </Router>
+
+    </div>
   );
 }
 

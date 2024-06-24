@@ -378,13 +378,7 @@ exports.getUser = async (req, res, next) => {
         if(!user) {
             return res.satus(404).json({ error: 'User not found'});
         }
-
-        // Compter le nombre de documents où l'auteur a l'ID spécifié
-        const postCount = await Post.countDocuments({ 'author.authorId': userId });
-
-        // Convertir l'utilisateur en objet pour pouvoir le modifier
-        const userObject = user.toObject();
-
+      
         // Calculer le nombre de followers et de personnes suivies
         const followers = userObject.followers.length;
         const following = userObject.followed.length;
@@ -415,5 +409,4 @@ exports.followSuggest = (req, res, next) => {
 };
 
 exports.search = async (req, res, next) => {
-    
-};
+
