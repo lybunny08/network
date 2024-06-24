@@ -400,7 +400,7 @@ exports.getUser = async (req, res, next) => {
         const following = userObject.followed.length;
 
         // Obtenir l'URL de la dernière image de profil
-        const profileImagUrl = userObject.profileImages[userObject.profileImages.length - 1];
+        const profileImagUrl = userObject.profileImages[userObject.profileImages.length - 1].imageUrl;
 
         // Supprimer les champs non nécessaires
         delete userObject.followers;
@@ -431,7 +431,7 @@ exports.getConnectionRequests = async (req, res, next) => {
         const user = await User.findById(userId).select('connectionRequests').exec();
         
         if(!user) {
-            return res.status(404).josn({ message: "User not found."});
+            return res.status(404).josn({ error: "User not found."});
         }
 
         if(user.connectionRequests.leght > 0) {
