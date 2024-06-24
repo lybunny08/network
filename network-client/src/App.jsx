@@ -17,8 +17,9 @@ import Register from './views/Register';
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('isAuthenticated') === 'true');
   const [showModal, setShowModal] = useState(false);
+  const [user, setUser] = useState(null); // State to hold user data
 
   const handleShowModal = () => setShowModal(true);
   const handleHideModal = () => setShowModal(false);
@@ -31,16 +32,50 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = (userData) => {
     setIsAuthenticated(true);
+    localStorage.setItem('isAuthenticated', 'true');
+    setUser(userData); // Set the user data received from login
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    // Ajoutez d'autres logiques de déconnexion ici si nécessaire
+    localStorage.removeItem('isAuthenticated');
+    setUser(null); // Clear user data on logout
   };
 
   return (
+    <Router>
+      {loading ? (
+        <SplashScreen />
+      ) : (
+        <>
+          <PageLoader />
+          <div className="d-flex">
+            {isAuthenticated && <Sidebar handleShowModal={handleShowModal} handleLogout={handleLogout} />}
+            <div className="flex-grow-1" style={{ marginLeft: isAuthenticated ? '340px' : '0', paddingTop: '0', marginTop: '0' }}>
+              <Routes>
+                {!isAuthenticated ? (
+                  <>
+                    <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="*" element={<Navigate to="/login" />} />
+                  </>
+                ) : (
+                  <>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/search" element={<Search />} />
+                    <Route path="/discover" element={<Discover />} />
+                    <Route path="/reels" element={<Reels />} />
+                    <Route path="/messages" element={<Messages />} />
+                    <Route path="/notifications" element={<Notifications />} />
+                    <Route path="/create" element={<Create />} />
+                    <Route path="/profil" element={<Profil user={user} handleLogout={handleLogout} />} />
+                    <Route path="*" element={<Navigate to="/" />} />
+                  </>
+                )}
+              </Routes>
+              {showModal && <CreateModal show={showModal} onHide={handleHideModal} />}
     <div className='container-fluid'>
         {
           loading ? (

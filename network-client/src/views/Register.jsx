@@ -25,7 +25,7 @@ const Register = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:3000/api/auth/signup', {
+      await axios.post('http://localhost:3000/api/auth/register', {
         firstName,
         lastName,
         birthDate,
@@ -39,12 +39,7 @@ const Register = () => {
   };
 
   return (
-    <Container className="d-flex align-items-center justify-content-center vh-100">
-      <Row className="w-500">
-        <Col xs={12} md={6} className="d-none d-md-flex align-items-center justify-content-center">
-          <Image src={logo} fluid />
-        </Col>
-        <Col xs={12} md={6} className="d-flex align-items-center justify-content-center">
+    <Container className="d-flex align-items-center justify-content-center vh-100 mx-5">
           <div className="register-form bg-white p-4 border rounded w-100" style={{ maxWidth: '400px' }}>
             <h2 className="text-center mb-4">Créer un compte</h2>
             <Form onSubmit={handleSubmit}>
@@ -111,8 +106,6 @@ const Register = () => {
               Déjà inscrit ? <Link to="/login">Se connecter</Link>
             </p>
           </div>
-        </Col>
-      </Row>
     </Container>
   );
 };
