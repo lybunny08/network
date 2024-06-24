@@ -36,7 +36,7 @@ exports.getOnePost = (req, res, next) => {
   Post.findOne({ _id: req.params.id })
     .then(post => {
       if (!post) {
-        return res.status(404).json({ message: 'Post not found.' });
+        return res.status(404).json({ error: 'Post not found.' });
       }
       res.status(200).json(post);
     }
@@ -49,7 +49,7 @@ exports.modifyPost = (req, res, next) => {
   Post.findById(req.params.id)
     .then((post) => {
       if (!post) {
-        return res.status(404).json({ message: 'Post not found.' });
+        return res.status(404).json({ error: 'Post not found.' });
       }
 
       const postObject = req.file ? {
@@ -62,7 +62,7 @@ exports.modifyPost = (req, res, next) => {
       };
 
       if (post.author.authorId != req.auth.userId) {
-          res.status(401).json({ message : 'Unauthorized.'});
+          res.status(401).json({ error : 'Unauthorized.'});
       } else {
           Post.updateOne({ _id: req.params.id}, { ...postObject, _id: req.params.id})
             .then(() => res.status(200).json({message : 'Updated.'}))
@@ -80,11 +80,11 @@ exports.deletePost = (req, res, next) => {
   Post.findById(req.params.id)
     .then(post => {
       if (!post) {
-        return res.status(404).json({ message: 'Post not found.' });
+        return res.status(404).json({ error: 'Post not found.' });
       }
 
       if (post.author.authorId != req.auth.userId) {
-          res.status(401).json({message: 'Unauthorized.'});
+          res.status(401).json({error: 'Unauthorized.'});
       } else {
         if(post.fileUrl)
         {
@@ -114,7 +114,7 @@ exports.likePost = async (req, res, next) => {
   try {
     const post =  await Post.findById(req.params.id).select('likes hashtags').exec();
     if(!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return res.status(404).json({ error: 'Post not found' });
     }
 
     const user = await User.findById(req.auth.userId).select('likedPosts favoriteHashtags userName').exec();
@@ -157,7 +157,7 @@ exports.commentPost = async (req, res, next) => {
   try {
     const post =  await Post.findById(req.params.id).select('likes hashtags').exec();
     if(!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return res.status(404).json({ error: 'Post not found' });
     }
 
     const user = await User.findById(req.auth.userId).select('userName').exec();
@@ -193,15 +193,15 @@ exports.modifyComment = async (req, res, next) => {
     if(!commentIsEmpty(req.body.comment) || req.file) {
       const post = await Post.findById(req.params.postId).select('comments').exec();
       if (!post) {
-        return res.status(404).json({ message: "Post not found." });
+        return res.status(404).json({ error: "Post not found." });
       }
 
       const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
       if(indexInComments === -1) {
-        return res.status(404).json({ message: 'Comment not found'});
+        return res.status(404).json({ error: 'Comment not found'});
       }
       if(post.comments[indexInComments].author.authorId != req.auth.userId) {
-        return res.status(401).json({ message: 'Unautorized.'});
+        return res.status(401).json({ error: 'Unautorized.'});
       }
 
       post.comments[indexInComments].content = req.file ? {
@@ -221,7 +221,7 @@ exports.modifyComment = async (req, res, next) => {
       res.status(200).json({ message: 'Updated.' });
     }
     else {
-      res.status(400).json({ message: 'Bad request'});
+      res.status(400).json({ error: 'Bad request'});
     }
   }
   catch(error) {
@@ -234,17 +234,17 @@ exports.deleteComment = (req, res, next) => {
     .select('comments')
     .then(post => {
       if (!post) {
-        return res.status(404).json({ message: "Post not found." });
+        return res.status(404).json({ error: "Post not found." });
       }
 
       const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
       if(indexInComments === -1) {
-        return res.status(404).json({ message: 'Comment not found.'});
+        return res.status(404).json({ error: 'Comment not found.'});
       }
       
       // securité
       if(post.comments[indexInComments].author.authorId != req.auth.userId) {
-        return res.status(401).json({ message: 'Unautorized.'});
+        return res.status(401).json({ error: 'Unautorized.'});
       }
 
       if(post.comments[indexInComments].content.fileUrl)
@@ -286,12 +286,12 @@ exports.replyComment = async (req, res, next) => {
   if(!replyIsEmpty(req.body.reply) || req.file) {
     const post = await Post.findById(req.params.postId).select('comments').exec();
     if (!post) {
-      return res.status(404).json({ message: "Post not found." });
+      return res.status(404).json({ error: "Post not found." });
     }
 
     const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
     if(indexInComments === -1) {
-      return res.status(404).json({ message: 'Comment not found.'});
+      return res.status(404).json({ error: 'Comment not found.'});
     }
 
     const user = await User.findById(req.auth.userId).select('userName').exec();
@@ -319,7 +319,7 @@ exports.replyComment = async (req, res, next) => {
     res.status(200).json({ message: "Done."});
     
   } else {
-    res.status(400).json({ message: 'Bad request'});
+    res.status(400).json({ error: 'Bad request'});
   }
 };
 
@@ -335,22 +335,22 @@ exports.modifyReply = (req, res, next) => {
       .select('comments')
       .then(post => {
         if (!post) {
-          return res.status(404).json({ message: "Post not found." });
+          return res.status(404).json({ error: "Post not found." });
         }
 
         const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
         if(indexInComments === -1) {
-          return res.status(404).json({ message: 'Comment not found.'});
+          return res.status(404).json({ error: 'Comment not found.'});
         }
 
         const indexInReplies = post.comments[indexInComments].replies.findIndex(reply => reply._id.toString() === req.params.replyId);
         if(indexInReplies === -1) {
-          return res.status(404).json({ message: 'Reply not found.'});
+          return res.status(404).json({ error: 'Reply not found.'});
         }
 
         // securité
         if(post.comments[indexInComments].replies[indexInReplies].author.authorId != req.auth.userId) {
-          return res.status(401).json({ message: 'Unautorized.'});
+          return res.status(401).json({ error: 'Unautorized.'});
         }
 
         post.comments[indexInComments].replies[indexInReplies].content = req.file ? {
@@ -377,7 +377,7 @@ exports.modifyReply = (req, res, next) => {
         res.status(500).json({ error });
     });
   } else {
-    res.status(400).json({ message: 'Bad request'});
+    res.status(400).json({ error: 'Bad request'});
   }
 };
 
@@ -386,22 +386,22 @@ exports.deleteReply = (req, res, next) => {
     .select('comments')
     .then(post => {
       if (!post) {
-        return res.status(404).json({ message: "Post not found." });
+        return res.status(404).json({ error: "Post not found." });
       }
 
       const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
       if(indexInComments === -1) {
-        return res.status(404).json({ message: 'Commentaire not found.'});
+        return res.status(404).json({ error: 'Commentaire not found.'});
       }
 
       const indexInReplies = post.comments[indexInComments].replies.findIndex(reply => reply._id.toString() === req.params.replyId);
       if(indexInReplies === -1) {
-        return res.status(404).json({ message: 'Reply not found.'});
+        return res.status(404).json({ error: 'Reply not found.'});
       }
 
       // securité
       if(post.comments[indexInComments].replies[indexInReplies].author.authorId != req.auth.userId) {
-        return res.status(401).json({ message: 'Unautorized.'});
+        return res.status(401).json({ error: 'Unautorized.'});
       }
 
       post.comments[indexInComments].replies.splice(indexInReplies, 1);
@@ -423,17 +423,17 @@ exports.likeReply = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.postId).select('comments').exec();
     if (!post) {
-      return res.status(404).json({ message: "Post not found." });
+      return res.status(404).json({ error: "Post not found." });
     }
 
     const indexInComments = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
     if(indexInComments === -1) {
-      return res.status(404).json({ message: 'Comment not found.'});
+      return res.status(404).json({ error: 'Comment not found.'});
     }
 
     const indexInReplies = post.comments[indexInComments].replies.findIndex(reply => reply._id.toString() === req.params.replyId);
     if(indexInReplies === -1) {
-      return res.status(404).json({ message: 'Reply not found.'});
+      return res.status(404).json({ error: 'Reply not found.'});
     }
 
     const user = await User.findById(req.auth.userId).select('userName').exec();
@@ -466,7 +466,7 @@ exports.getPersonalsizedPosts = async (req, res, next) => {
       .exec();
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     const isAddedWithinLast7Days = (dateString) => {
