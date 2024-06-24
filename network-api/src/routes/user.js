@@ -5,8 +5,8 @@ const multer = require('../middlewares/multer-config');
 
 const router = express.Router();
 
-router.get('/', auth, userCtrl.getUser);
-router.patch('/', auth, userCtrl.modifyProfil);
+router.get('/:id', auth, userCtrl.getUser);
+router.patch('/:id', auth, userCtrl.modifyProfil);
 
 
 router.post('/signup', userCtrl.signup);

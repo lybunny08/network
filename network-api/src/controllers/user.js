@@ -317,7 +317,7 @@ exports.modifyProfil = async (req, res, next) => {
 
 exports.getUser = async (req, res, next) => {
     try {
-        const userId = req.auth.userId;
+        const userId = req.params.id;
 
         // Trouver l'utilisateur par ID et sélectionner certains champs
         const user = await User.findById(userId)
