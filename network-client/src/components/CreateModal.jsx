@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
+import axios from 'axios'; // Import Axios for making HTTP requests
 import img4 from '../assets/img4.png';
 
 const CreateModal = ({ show, onHide }) => {
@@ -8,12 +9,12 @@ const CreateModal = ({ show, onHide }) => {
   const [text, setText] = useState('');
   const [charCount, setCharCount] = useState(0);
   const maxCharCount = 200;
-
   const [hashtags, setHashtags] = useState('');
+
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setSelectedFile(URL.createObjectURL(file));
+      setSelectedFile(file);
     }
   };
 
@@ -35,11 +36,9 @@ const CreateModal = ({ show, onHide }) => {
   };
 
   const handleHashtagChange = (event) => {
-    const newHashtags = event.target.value;
-    setHashtags(newHashtags);
+    setHashtags(event.target.value);
   };
 
-  // Function to format hashtags
   const formatHashtags = () => {
     // Split the hashtags by space
     const words = hashtags.split(/\s+/);
@@ -49,18 +48,27 @@ const CreateModal = ({ show, onHide }) => {
     return formattedHashtags.join(' ');
   };
 
-  const handlePost = () => {
-    // You can access formatted hashtags using formatHashtags()
+  const handlePost = async () => {
     const formattedHashtags = formatHashtags();
-    // Implement your logic to post the content
-    console.log('Posting...', {
-      text,
-      hashtags: formattedHashtags,
-      selectedFile,
-      fileType
-    });
-    // Close the modal after posting
-    onHide();
+    const formData = new FormData();
+    formData.append('text', text);
+    formData.append('hashtags', formattedHashtags);
+    formData.append('image', selectedFile);
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/posts', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+          // Add any additional headers here as needed
+        }
+      });
+
+      console.log('Post created successfully: ', response.data);
+      onHide(); // Close the modal after posting
+    } catch (error) {
+      console.error('Error creating post: ', error);
+      // Handle error (show an alert, error message, etc.)
+    }
   };
 
   return (
@@ -86,10 +94,10 @@ const CreateModal = ({ show, onHide }) => {
               {selectedFile && (
                 <div className="mt-3">
                   {fileType === 'image' ? (
-                    <img src={selectedFile} alt="Selected" style={{ maxWidth: '100%', maxHeight: '400px' }} />
+                    <img src={URL.createObjectURL(selectedFile)} alt="Selected" style={{ maxWidth: '100%', maxHeight: '400px' }} />
                   ) : (
                     <video controls style={{ maxWidth: '100%', maxHeight: '400px' }}>
-                      <source src={selectedFile} type={fileType === 'video' ? 'video/mp4' : 'video/webm'} />
+                      <source src={URL.createObjectURL(selectedFile)} type={fileType === 'video' ? 'video/mp4' : 'video/webm'} />
                       Your browser does not support the video tag.
                     </video>
                   )}
@@ -97,10 +105,10 @@ const CreateModal = ({ show, onHide }) => {
               )}
             </Col>
             <Col md={6}>
-                <div className="d-flex mb-3 mt-2">
-                  <img src={user.avatar} alt="Avatar" className="rounded-circle me-2" style={{ width: '50px', height: '50px' }} />
-                  <span className="align-items-center mt-2">@{user.name}</span>
-                </div>
+              <div className="d-flex mb-3 mt-2">
+                <img src={user.avatar} alt="Avatar" className="rounded-circle me-2" style={{ width: '50px', height: '50px' }} />
+                <span className="align-items-center mt-2">@{user.name}</span>
+              </div>
               <Form.Group controlId="formText">
                 <Form.Label>Post Text</Form.Label>
                 <Form.Control
@@ -110,9 +118,9 @@ const CreateModal = ({ show, onHide }) => {
                   onChange={handleTextChange}
                   maxLength={maxCharCount}
                   placeholder="Enter your text here..."
-                  style={{ 
-                    border: 'none', 
-                    outline: 'none', 
+                  style={{
+                    border: 'none',
+                    outline: 'none',
                     resize: 'none',
                     boxShadow: 'none',
                   }}
@@ -124,14 +132,13 @@ const CreateModal = ({ show, onHide }) => {
               <Form.Group controlId="formHashtags" className="mt-3">
                 <Form.Label>Hashtags</Form.Label>
                 <Form.Control
-                  as="textarea"
-                  rows={3}
+                  type="text"
                   value={hashtags}
                   onChange={handleHashtagChange}
                   placeholder="Enter hashtags here (separate with spaces)..."
-                  style={{ 
-                    border: 'none', 
-                    outline: 'none', 
+                  style={{
+                    border: 'none',
+                    outline: 'none',
                     resize: 'none',
                     boxShadow: 'none',
                   }}
