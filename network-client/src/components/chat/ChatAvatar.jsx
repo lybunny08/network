@@ -1,11 +1,11 @@
 import React from 'react';
 
-const ChatAvatar = ({ chat, style, handleClick }) => {
+const ChatAvatar = ({ chat, handleClick }) => {
     let chatId = chat._id;
     let userName = chat.users[0].userName;
     let lastMessage = chat.users[0].lastMessage;
     let imageAvatar = chat.users[0].imageAvatar;
-    let style = style || { backgroundColor: '#ffff'};
+    let style = { backgroundColor: '#ffff'};
 
     return (
         <button className="py-2 d-flex w-100" id='chat-avatar'
