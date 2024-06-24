@@ -4,10 +4,14 @@ exports.chat = async (req, res, next) => {
     try {
         const chat = await Chat.findById(req.params.id).exec();
 
+        if(!chat) {
+            res.status(404).json({ error: 'Chat not found.'});
+        }
+
         // Verifie si l'utilisateur appartient au chat
         const indexInUsers = chat.users.findIndex(user => user.userId == req.auth.userId );
         if(indexInUsers === -1) {
-            return res.status(401).json({ message: "Unautorized."})
+            return res.status(401).json({ error: "Unautorized."})
         }
 
         // On ne peut envyer que soit un fichier soit un text
@@ -67,7 +71,7 @@ exports.getOneChat = async (req, res, next) => {
     try {
         const chat = await Chat.findById(req.params.id).exec();
         if (!chat) {
-            return res.status(404).json({ message: 'Chat not found.' });
+            return res.status(404).json({ error: 'Chat not found.' });
         }
         
         // On met les messages en veiw = fasle à true et on sauvegarde
