@@ -17,8 +17,9 @@ import Register from './views/Register';
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('isAuthenticated') === 'true');
   const [showModal, setShowModal] = useState(false);
+  const [user, setUser] = useState(null); // State to hold user data
 
   const handleShowModal = () => setShowModal(true);
   const handleHideModal = () => setShowModal(false);
@@ -31,13 +32,16 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = (userData) => {
     setIsAuthenticated(true);
+    localStorage.setItem('isAuthenticated', 'true');
+    setUser(userData); // Set the user data received from login
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    // Ajoutez d'autres logiques de déconnexion ici si nécessaire
+    localStorage.removeItem('isAuthenticated');
+    setUser(null); // Clear user data on logout
   };
 
   return (
@@ -66,7 +70,7 @@ function App() {
                     <Route path="/messages" element={<Messages />} />
                     <Route path="/notifications" element={<Notifications />} />
                     <Route path="/create" element={<Create />} />
-                    <Route path="/profil" element={<Profil handleLogout={handleLogout} />} />
+                    <Route path="/profil" element={<Profil user={user} handleLogout={handleLogout} />} />
                     <Route path="*" element={<Navigate to="/" />} />
                   </>
                 )}
