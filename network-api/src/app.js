@@ -18,7 +18,9 @@ app.use((req, res, next) => {
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended:false}));
-app.use('/files', express.static(path.join(__dirname, 'files')));
+
+console.log(path.join(__dirname, '../files'));
+app.use('/files', express.static(path.join(__dirname, '../files')));
 
 mongoose.connect('mongodb://localhost:27017/network', { serverSelectionTimeoutMS: 5000 })
     .then(() => console.log('Connexion à MongoDB réussie !'))
