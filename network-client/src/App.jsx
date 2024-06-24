@@ -6,7 +6,7 @@ import Home from './views/Home';
 import Search from './views/Search';
 import Discover from './views/Discover';
 import Reels from './views/Reels';
-import Messages from './views/Messages';
+import Messages from './views/chat/Messages';
 import Notifications from './views/Notifications';
 import Create from './views/Create';
 import Profil from './views/Profil';

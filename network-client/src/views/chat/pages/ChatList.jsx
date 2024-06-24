@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import ChatCard from "./ChatCard";
-import { getChats } from "../../helper/requests";
 
-const ChatList = () => {
+import { getChats } from "../../../helper/requests";
+import ChatAvatar from "../../../components/chat/ChatAvatar";
+
+const ChatList = ({ showChatSpace }) => {
     const [chats, setChats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,8 +15,8 @@ const ChatList = () => {
 
             const response = await getChats(limit, offset);
 
-            if (response.error || response.message) {
-                setError(response.error ?? response.message);
+            if (response.error) {
+                setError(response.error);
             } else {
                 setChats(response);
             }
@@ -27,21 +28,23 @@ const ChatList = () => {
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div className="d-flex justify-content-center">Loading...</div>;
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return <div className="d-flex justify-content-center text-danger">Error: {error}</div>;
     }
 
     return (
         <>
             {chats.length === 0 ? (
                 <div className="d-flex justify-content-center">
-                    <span>Vide.</span>
+                    Aucun message trouvé.
                 </div>
             ) : (
-                chats.map((chat) => <ChatCard key={chat._id} chat={chat} />)
+                <div className="d-flex justify-content-center">
+                    {chats.map((chat) => <ChatAvatar key={chat._id} chat={chat} handleClick={showChatSpace} />)}
+                </div>
             )}
         </>
     );
