@@ -57,7 +57,7 @@ const postSchema = new mongoose.Schema({
         type: [{ type: String, required: true }],
         validate: [arrayLimit, '{PATH} dois avoir au moins un hashtag']
     },
-    fileUrl: { type: String },
+    fileUrl: { type: String, required: true },
     author: authorSchema,
     likes: [{
         author: authorSchema,

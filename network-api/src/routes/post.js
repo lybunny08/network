@@ -6,13 +6,15 @@ const postCtrl = require('../controllers/post');
 
 const router = express.Router();
 
-router.post('/', auth, multer, postCtrl.createPost);
+router.post('/', auth, postCtrl.createPost);
 router.get('/', auth, postCtrl.getPersonalsizedPosts);
 
 router.get('/:id', auth, postCtrl.getOnePost);
-router.put('/:id', auth, multer, postCtrl.modifyPost);
+router.patch('/:id', auth, postCtrl.modifyPost);
 router.post('/:id', auth, postCtrl.likePost);
 router.delete('/:id', auth, postCtrl.deletePost);
+
+router.get('/user/:userId', auth, postCtrl.getUserPosts);
 
 router.post('/:postId/comment', auth, multer, postCtrl.commentPost);
 router.put('/:postId/comment/:commentId', auth, multer, postCtrl.modifyComment);
