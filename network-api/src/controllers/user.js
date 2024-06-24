@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/User');
 const Chat = require('../models/Chat');
+const Post = require('../models/Post');
 
 exports.signup = (req, res, next) => {
     bcrypt.hash(req.body.password, 10)
@@ -310,13 +311,51 @@ exports.getNetworks = async (req, res, next) => {
     }
 };
 
-exports.modifyProfil = (req, res, next) => {
+exports.modifyProfil = async (req, res, next) => {
 
 };
 
-exports.changePassword = (req, res, next) => {
+exports.getUser = async (req, res, next) => {
+    try {
+        const userId = req.auth.userId;
 
+        // Trouver l'utilisateur par ID et sélectionner certains champs
+        const user = await User.findById(userId)
+            .select('userName lastName firstName profileImages followers followed')
+            .exec();
+
+        // Compter le nombre de documents où l'auteur a l'ID spécifié
+        const postCount = await Post.countDocuments({ 'author.authorId': userId });
+
+        // Convertir l'utilisateur en objet pour pouvoir le modifier
+        const userObject = user.toObject();
+
+        // Calculer le nombre de followers et de personnes suivies
+        const followers = userObject.followers.length;
+        const following = userObject.followed.length;
+
+        // Obtenir l'URL de la dernière image de profil
+        const profileImagUrl = userObject.profileImages[userObject.profileImages.length - 1];
+
+        // Supprimer les champs non nécessaires
+        delete userObject.followers;
+        delete userObject.followed;
+        delete userObject.profileImages;
+
+        // Ajouter les nouveaux champs
+        userObject.profileImagUrl = profileImagUrl;
+        userObject.followers = followers;
+        userObject.following = following;
+        userObject.postCount = postCount;
+
+        // Envoyer la réponse avec le statut 200 et l'objet utilisateur modifié
+        res.status(200).json(userObject);
+    } catch (error) {
+        res.status(500).json({ error });
+    }
 };
+
+
 
 exports.followSuggest = (req, res, next) => {
     
