@@ -3,6 +3,13 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/User');
 const Chat = require('../models/Chat');
+const Post = require('../models/Post');
+
+function IsEmpty (str) {
+    if(str && str.trim().length !== 0)
+        return false;
+    return true;
+}
 
 exports.signup = (req, res, next) => {
     bcrypt.hash(req.body.password, 10)
@@ -16,6 +23,12 @@ exports.signup = (req, res, next) => {
             email: req.body.email,
             password: hash,
         });
+
+        // Donner un pdp à l'user
+        user.profileImages.unshift({
+            imageUrl: 'http://localhost:3000/files/defaulUserImage.jpeg1719221914537.jpg'
+        });
+
         user.save()
             .then(() => res.status(201).json({ message: 'Done.' }))
             .catch(error => res.status(400).json({ error }));
@@ -27,15 +40,16 @@ exports.login = (req, res, next) => {
     User.findOne({ email: req.body.email })
         .then(user => {
             if (!user) {
-                return res.status(401).json({ message: 'email or password incorrect'});
+                return res.status(401).json({ error: 'email or password incorrect'});
             }
             bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if (!valid) {
-                        return res.status(401).json({ message: 'email or password incorrect' });
+                        return res.status(401).json({ error: 'email or password incorrect' });
                     }
                     res.status(200).json({
                         userId: user._id,
+                        userName: user.userName,
                         token: jwt.sign(
                             { userId: user._id },
                             'RANDOM_TOKEN_SECRET',
@@ -54,7 +68,7 @@ exports.follow = (req, res, next) => {
         .select('followers userName firstName lastName')
         .then(userToFollow => {
             if (!userToFollow) {
-                return res.status(404).json({ message: 'User not found.' });
+                return res.status(404).json({ error: 'User not found.' });
             }
 
             // Trouver l'utilisateur qui fait le suivi
@@ -65,7 +79,7 @@ exports.follow = (req, res, next) => {
                     const isAlreadyFollowed = userDoingFollowing.followed.some(followed => followed.user.userId.equals(userToFollow._id));
 
                     if (isAlreadyFollowed) {
-                        return res.status(400).json({ message: 'User already followed.' });
+                        return res.status(400).json({ error: 'User already followed.' });
                     }
 
                     // Ajouter l'utilisateur à la liste des suivis
@@ -114,7 +128,7 @@ exports.unfollow = (req, res, next) => {
         .select('followers')
         .then(userToUnfollow => {
             if (!userToUnfollow) {
-                return res.status(404).json({ message: 'User not found.' });
+                return res.status(404).json({ error: 'User not found.' });
             }
 
             // Trouver l'utilisateur qui fait l'opération de unfollow
@@ -125,7 +139,7 @@ exports.unfollow = (req, res, next) => {
                     const indexInFollowed = userDoingUnfollowing.followed.findIndex(followed => followed.user.userId.equals(userToUnfollow._id));
 
                     if (indexInFollowed === -1) {
-                        return res.status(400).json({ message: 'User already unfollowed.' });
+                        return res.status(400).json({ error: 'User already unfollowed.' });
                     }
 
                     // Supprimer l'utilisateur de la liste des suivis
@@ -141,7 +155,7 @@ exports.unfollow = (req, res, next) => {
                                 userToUnfollow.followers.splice(indexInFollowers, 1);
 
                                 userToUnfollow.save()
-                                    .then(() => res.status(200).json({ message: 'Done.' }))
+                                    .then(() => res.status(200).json({ error: 'Done.' }))
                                     .catch(error => res.status(500).json({ error }));
                             } else {
                                 res.status(200).json({ message: 'Done.' });
@@ -158,7 +172,7 @@ exports.sendConnectionRequest = async (req, res, next) => {
     try {
         const userReceiveConnectionReq = await User.findById(req.params.id).select('notifications connectionRequests networks').exec();
         if(!userReceiveConnectionReq) {
-            return res.status(404).json({ message: 'User not found.' })
+            return res.status(404).json({ error: 'User not found.' })
         }
         const userDoConnectionReq = await User.findById(req.auth.userId).select('userName firstName lastName').exec();
         const indexInConnectionRequests = userReceiveConnectionReq.connectionRequests.findIndex(connectionRequest => connectionRequest.user.userId.equals(userDoConnectionReq._id));
@@ -173,7 +187,7 @@ exports.sendConnectionRequest = async (req, res, next) => {
         else if(indexInConnectionRequests !== -1 && 
             userReceiveConnectionReq.connectionRequests[indexInConnectionRequests].isAccepted != undefined) 
         {
-            return res.status(401).json({ message: 'Unautorized.' });
+            return res.status(401).json({ error: 'Unautorized.' });
         } 
         // Si la demande n'existe
         else {
@@ -210,7 +224,7 @@ exports.responseConnectionRequest = async (req, res, next) => {
             accept = false;
             break;
         default:
-            return res.status(400).json({ message: 'Invalid query parameter' });
+            return res.status(400).json({ error: 'Invalid query parameter' });
     }
 
     try {
@@ -219,7 +233,7 @@ exports.responseConnectionRequest = async (req, res, next) => {
                                             .select('userName connectionRequests networks lastName firstName')
                                             .exec();
         if (!userReceivedConnectionReq) {
-            return res.status(404).json({ message: 'Receiving user not found.' });
+            return res.status(404).json({ error: 'Receiving user not found.' });
         }
 
         // Trouver l'index de la demande de connexion
@@ -227,11 +241,11 @@ exports.responseConnectionRequest = async (req, res, next) => {
             connectionRequest._id.toString() === req.params.connectReqId
         );
         if (indexInConnectionRequests === -1) {
-            return res.status(404).json({ message: "Request not found." });
+            return res.status(404).json({ error: "Request not found." });
         }
         // Empêcher la rénregistrement
         if(userReceivedConnectionReq.connectionRequests[indexInConnectionRequests].isAccepted) {
-            return res.status(400).json({message: "Connection request already answerd."});
+            return res.status(400).json({ error: "Connection request already answerd." });
         }
 
         // Mettre à jour l'acceptation de la demande de connexion
@@ -242,7 +256,7 @@ exports.responseConnectionRequest = async (req, res, next) => {
                                         .select('notifications networks userName lastName firstName')
                                         .exec();
         if (!userDoConnectionReq) {
-            return res.status(404).json({ message: 'Requesting user not found.' });
+            return res.status(404).json({ error: 'Requesting user not found.' });
         }
 
         // Si la demande est acceptée
@@ -296,7 +310,7 @@ exports.responseConnectionRequest = async (req, res, next) => {
 
         res.status(200).json({ message: "Done." });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error });
     }
 };
 
@@ -310,14 +324,96 @@ exports.getNetworks = async (req, res, next) => {
     }
 };
 
-exports.modifyProfil = (req, res, next) => {
+exports.modifyProfil = async (req, res, next) => {
+    const userId = req.params.id;
+    const newUserName = req.body.userName;
 
+    if(IsEmpty(newUserName) && !req.file) {
+        return res.status(400).json({ error:'Bad request. '});
+    }
+
+    try {
+        const user = await User.findById(userId)
+                        .select('userName profileImages')
+                        .exec();
+        
+        if(!user) {
+            return res.status(500).json({ error: 'User not found.'});
+        }
+
+        if(userId != user._id) {
+            return res.status(401).json({ error:'Unauthorized.'});
+        }
+
+        // Modifier le user name
+        if(newUserName) {
+            user.userName = newUserName;
+        }
+
+        // Modifer le profil si il y a un fichier envoyer
+        if(req.file) {
+            user.profileImages.unshift({
+                imageUrl: `${req.protocol}://${req.get('host')}/files/${req.file.filename}`
+            });
+        }
+
+        await user.save();
+
+        res.status(200).json({ message: 'Done.' });
+    }
+    catch(error) {
+        res.status(500).json({ error });
+    }
 };
 
-exports.changePassword = (req, res, next) => {
+exports.getUser = async (req, res, next) => {
+    const userId = req.params.id;
 
+    try {
+        // Trouver l'utilisateur par ID et sélectionner certains champs
+        const user = await User.findById(userId)
+            .select('userName lastName firstName profileImages followers followed')
+            .exec();
+
+        if(!user) {
+            return res.satus(404).json({ error: 'User not found'});
+        }
+
+        // Compter le nombre de documents où l'auteur a l'ID spécifié
+        const postCount = await Post.countDocuments({ 'author.authorId': userId });
+
+        // Convertir l'utilisateur en objet pour pouvoir le modifier
+        const userObject = user.toObject();
+
+        // Calculer le nombre de followers et de personnes suivies
+        const followers = userObject.followers.length;
+        const following = userObject.followed.length;
+
+        // Obtenir l'URL de la dernière image de profil
+        const profileImagUrl = userObject.profileImages[userObject.profileImages.length - 1];
+
+        // Supprimer les champs non nécessaires
+        delete userObject.followers;
+        delete userObject.followed;
+        delete userObject.profileImages;
+
+        // Ajouter les nouveaux champs
+        userObject.profileImagUrl = profileImagUrl;
+        userObject.followers = followers;
+        userObject.following = following;
+        userObject.postCount = postCount;
+
+        // Envoyer la réponse avec le statut 200 et l'objet utilisateur modifié
+        res.status(200).json(userObject);
+    } catch (error) {
+        res.status(500).json({ error });
+    }
 };
 
 exports.followSuggest = (req, res, next) => {
+    
+};
+
+exports.search = async (req, res, next) => {
     
 };

@@ -1,15 +1,26 @@
 import React from 'react';
 import { Container, Row, Col, Image, Button } from 'react-bootstrap';
 import img4 from '../assets/img4.png';
+import { useNavigate } from 'react-router-dom';
 
-const Profil = () => {
+const Profil = ({ user, handleLogout }) => {
+  const navigate = useNavigate();
+
+  const handleLogoutClick = () => {
+    handleLogout();
+    navigate('/login');
+  };
+
+  // Vérifiez si user est défini
+  const userName = user?.userName || 'Nom inconnu';
+
   return (
     <Container className="pb-5">
       <Row className="justify-content-start">
         <Col xs={12}>
           <div className="d-flex mb-5 mx-8">
             <Image
-              src={img4}
+              src={img4} // Replace with user's profile image
               roundedCircle
               width={150}
               height={150}
@@ -17,12 +28,12 @@ const Profil = () => {
             />
             <div className="flex-grow-1 mx-5">
               <div className="d-flex align-items-center justify-content-start mb-3">
-                <span>mamtianalydien</span>
+                <span>{userName}</span> {/* Display user's first and last name */}
                 <Button variant="outline-secondary" className="mx-5">
                   Modifier le profil
                 </Button>
-                <Button variant="outline-secondary" className="">
-                  Deconnexion
+                <Button variant="outline-secondary" onClick={handleLogoutClick}>
+                  Déconnexion
                 </Button>
               </div>
               <div className="d-flex mb-4">
@@ -36,7 +47,6 @@ const Profil = () => {
                   <strong>149</strong> suivi(e)s
                 </span>
               </div>
-              <span className="mb-2 text-bold">Mam'tiana Lydien</span>
             </div>
           </div>
         </Col>
@@ -45,13 +55,10 @@ const Profil = () => {
         <Col xs={12}>
           <hr className="custom-hr mt-4 mb-3" />
           <div className="d-flex justify-content-start border-top pt-5">
-            {/* Add your posts here in a grid layout similar to Instagram */}
-            {/* Example post layout */}
             <div className="d-flex flex-wrap">
               <div className="p-2">
                 <Image src={img4} thumbnail style={{ width: '200px', height: '200px', objectFit: 'cover' }} />
               </div>
-              {/* Repeat similar blocks for more posts */}
             </div>
           </div>
         </Col>
