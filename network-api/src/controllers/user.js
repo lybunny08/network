@@ -438,7 +438,7 @@ exports.getConnectionRequests = async (req, res, next) => {
             connectionRequests = user.connectionRequests.filter(connectionRequest => !connectionRequest.hasOwnProperty("isAccepted"));
         }
 
-        res.status(200).json(connectionRequests);
+        res.status(200).json(user);
     } catch(error) {
         res.status(500).json({ error });
     }

@@ -5,9 +5,9 @@ import SwitchableButton from "../../../components/chat/SwitchButton";
 import ChatList from "./ChatList";
 
 export default function NetworkSpace ({ showChatSpace }) {
-    const [networkSpaceView, setNetWorkSpaceView] = useState();
+    const [viewSection, setViewSection] = useState("Messages");
     function onSwitch (value) {
-        setNetWorkSpaceView(value);
+      setViewSection(value);
     }
 
     return (
@@ -21,7 +21,7 @@ export default function NetworkSpace ({ showChatSpace }) {
             <div id='chat-list' 
               style={{ height: '28rem'}} 
               className='overflow-y-auto mt-3'>
-                <ChatList showChatSpace={showChatSpace}/>
+                <ChatList showChatSpace={showChatSpace} viewSection={viewSection}/>
             </div>
           </div>
         </>
