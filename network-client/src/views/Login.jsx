@@ -26,6 +26,7 @@ const Login = ({ callback }) => {
       localStorage.setItem('userName', user.userName);
       localStorage.setItem('userId', user.userId);
       localStorage.setItem('token', user.token);
+      localStorage.setItem('imageUrl', user.profileImageUrl);
 
       callback(true);
     } else if (error) {
