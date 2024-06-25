@@ -50,6 +50,7 @@ exports.login = (req, res, next) => {
                     res.status(200).json({
                         userId: user._id,
                         userName: user.userName,
+                        profileImageUrl: user.profileImages[0].imageUrl,
                         token: jwt.sign(
                             { userId: user._id },
                             'RANDOM_TOKEN_SECRET',
@@ -400,7 +401,7 @@ exports.getUser = async (req, res, next) => {
         const following = userObject.followed.length;
 
         // Obtenir l'URL de la dernière image de profil
-        const profileImagUrl = userObject.profileImages[userObject.profileImages.length - 1].imageUrl;
+        const profileImagUrl = userObject.profileImages[0].imageUrl;
 
         // Supprimer les champs non nécessaires
         delete userObject.followers;
@@ -426,23 +427,24 @@ exports.followSuggest = (req, res, next) => {
 
 exports.getConnectionRequests = async (req, res, next) => {
     const userId = req.auth.userId;
-    try{
+    try {
         let connectionRequests = [];
         const user = await User.findById(userId).select('connectionRequests').exec();
         
-        if(!user) {
-            return res.status(404).josn({ error: "User not found."});
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        
+        if (user.connectionRequests.length > 0) {
+            connectionRequests = user.connectionRequests.filter(connectionRequest => connectionRequest.isAccepted === undefined);
         }
 
-        if(user.connectionRequests.leght > 0) {
-            connectionRequests = user.connectionRequests.filter(connectionRequest => !connectionRequest.hasOwnProperty("isAccepted"));
-        }
-
-        res.status(200).json(user);
-    } catch(error) {
+        res.status(200).json(connectionRequests);
+    } catch (error) {
         res.status(500).json({ error });
     }
-}
+};
+
 
 exports.search = async (req, res, next) => {
     
