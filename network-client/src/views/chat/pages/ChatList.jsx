@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 import { getChats, getConnectionRequests } from "../../../helper/requests";
 import ChatAvatar from "../../../components/chat/ChatAvatar";
 
@@ -14,19 +13,15 @@ const ChatList = ({ showChatSpace, viewSection }) => {
             setLoading(true);
             setError(null);
 
-            if (viewSection === 'Demandes') {
-                try {
+            try {
+                if (viewSection === 'Demandes') {
                     const response = await getConnectionRequests();
                     if (response.error) {
                         setError(response.error);
                     } else {
-                        console.log(response);
+                        setRequests(response);
                     }
-                } catch (err) {
-                    setError('Failed to fetch connection requests');
-                }
-            } else {
-                try {
+                } else {
                     let limit = 20;
                     let offset = 0;
                     const response = await getChats(limit, offset);
@@ -35,9 +30,9 @@ const ChatList = ({ showChatSpace, viewSection }) => {
                     } else {
                         setChats(response);
                     }
-                } catch (err) {
-                    setError('Failed to fetch chats');
                 }
+            } catch (err) {
+                setError('Failed to fetch data');
             }
 
             setLoading(false);
@@ -45,6 +40,34 @@ const ChatList = ({ showChatSpace, viewSection }) => {
 
         fetchData();
     }, [viewSection]);
+
+    const renderResults = () => {
+        if (viewSection === 'Demandes') {
+            return requests.length === 0 ? (
+                <div className="d-flex justify-content-center">
+                    Aucun résultat.
+                </div>
+            ) : (
+                <div className="d-flex justify-content-center">
+                    {requests.map((request) => (
+                        <ChatAvatar key={request._id} chat={request} handleClick={showChatSpace} />
+                    ))}
+                </div>
+            );
+        } else {
+            return chats.length === 0 ? (
+                <div className="d-flex justify-content-center">
+                    Aucun résultat.
+                </div>
+            ) : (
+                <div className="d-flex justify-content-center">
+                    {chats.map((chat) => (
+                        <ChatAvatar key={chat._id} chat={chat} handleClick={showChatSpace} />
+                    ))}
+                </div>
+            );
+        }
+    };
 
     if (loading) {
         return <div className="d-flex justify-content-center">Loading...</div>;
@@ -54,35 +77,7 @@ const ChatList = ({ showChatSpace, viewSection }) => {
         return <div className="d-flex justify-content-center text-danger">Error: {error}</div>;
     }
 
-    return (
-        <>
-            {viewSection === 'Demandes' ? (
-                requests.length === 0 ? (
-                    <div className="d-flex justify-content-center">
-                        Aucun résultat.
-                    </div>
-                ) : (
-                    <div className="d-flex justify-content-center">
-                        {requests.map((request) => (
-                            <ChatAvatar key={request._id} chat={request} handleClick={showChatSpace} />
-                        ))}
-                    </div>
-                )
-            ) : (
-                chats.length === 0 ? (
-                    <div className="d-flex justify-content-center">
-                        Aucun résultat.
-                    </div>
-                ) : (
-                    <div className="d-flex justify-content-center">
-                        {chats.map((chat) => (
-                            <ChatAvatar key={chat._id} chat={chat} handleClick={showChatSpace} />
-                        ))}
-                    </div>
-                )
-            )}
-        </>
-    );
+    return renderResults();
 };
 
 export default ChatList;
